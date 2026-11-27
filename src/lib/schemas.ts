@@ -311,9 +311,17 @@ export const assistantRequestSchema = z.object({
 });
 export type AssistantRequest = z.infer<typeof assistantRequestSchema>;
 
+export const queriedLocationSchema = z.object({
+  label: z.string().max(100),
+  /** ok = live data fetched; failed = geocoded but fetch failed; home = covered by the plan data. */
+  status: z.enum(["ok", "failed", "home"]),
+});
+export type QueriedLocation = z.infer<typeof queriedLocationSchema>;
+
 export const aiExplanationSchema = z.object({
   status: z.enum(["ok"]),
-  model: z.literal("gemini-3.5-flash-lite"),
+  /** Exact model id reported by the server (AI_MODEL, default gemini-3.5-flash-lite). */
+  model: z.string().min(1).max(80),
   explanation: z.string().min(1).max(1200),
   actionNotes: z
     .array(
@@ -338,7 +346,7 @@ export const aiUnavailableSchema = z.object({
     "request_too_large",
   ]),
   message: z.string(),
-  model: z.literal("gemini-3.5-flash-lite"),
+  model: z.string().min(1).max(80),
 });
 export type AiUnavailable = z.infer<typeof aiUnavailableSchema>;
 
@@ -346,6 +354,8 @@ export const assistantResponseSchema = z.object({
   air: airQualityResponseSchema,
   plan: planSchema.optional(),
   ai: z.union([aiExplanationSchema, aiUnavailableSchema]).optional(),
+  /** Places resolved from the user's question (shown in the UI as live-data chips). */
+  queriedLocations: z.array(queriedLocationSchema).max(4).optional(),
 });
 export type AssistantResponse = z.infer<typeof assistantResponseSchema>;
 

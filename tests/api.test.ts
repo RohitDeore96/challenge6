@@ -131,7 +131,7 @@ describe("POST /api/assistant", () => {
     expect(body.issues.length).toBeGreaterThan(0);
   });
 
-  it("returns the deterministic plan without any Gemini key", async () => {
+  it("returns the deterministic plan plus an honest AI state without a key", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => jsonResponse(makeOpenMeteoResponse()))
@@ -142,7 +142,11 @@ describe("POST /api/assistant", () => {
     expect(body.plan.pillars.breathe).toBeDefined();
     expect(body.plan.pillars.indoor).toBeDefined();
     expect(body.plan.pillars.emission).toBeDefined();
-    expect(body.ai).toBeUndefined();
+    // The AI briefing is generated with every plan; without a key it
+    // degrades to the honest unavailable state.
+    expect(body.ai.status).toBe("unavailable");
+    expect(body.ai.reason).toBe("key_not_configured");
+    expect(body.queriedLocations).toBeUndefined();
   });
 
   it("reports an honest unavailable AI state when a question is asked without a key", async () => {
@@ -221,6 +225,103 @@ describe("POST /api/assistant", () => {
     const calledUrl = geminiFetch.mock.calls[0]?.[0] ?? "";
     expect(calledUrl).toContain("gemini-3.5-flash-lite:generateContent");
     expect(calledUrl).not.toContain("test-key-for-vitest");
+  });
+
+  it("fetches live data for a city named in the question and passes it to Gemini", async () => {
+    vi.stubEnv("GEMINI_API_KEY", "test-key-for-vitest");
+    let geminiRequestBody = "";
+    const geminiFetch = vi.fn(async (url: string, init?: RequestInit) => {
+      geminiRequestBody = String(init?.body ?? "");
+      return jsonResponse({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    explanation: "Mumbai is cleaner than Delhi today.",
+                    actionNotes: [],
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      });
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.includes("generativelanguage.googleapis.com")) {
+          return geminiFetch(url, init);
+        }
+        return jsonResponse(makeOpenMeteoResponse());
+      })
+    );
+
+    const res = await assistantPOST(
+      assistantRequest({
+        ...VALID_BODY,
+        question: "What is the AQI in Mumbai right now?",
+      })
+    );
+    const body = await res.json();
+    expect(body.ai.status).toBe("ok");
+    expect(body.queriedLocations).toEqual([
+      { label: "Mumbai, Maharashtra", status: "ok" },
+    ]);
+    // The prompt must contain the live Mumbai data block for the model.
+    expect(geminiRequestBody).toContain("Mumbai, Maharashtra");
+    expect(geminiRequestBody).toContain('live_data_available\\":true');
+    // Privacy: coordinates of the queried place must never be sent.
+    expect(geminiRequestBody).not.toContain("72.8777");
+    expect(geminiRequestBody).not.toContain("19.076");
+  });
+
+  it("marks a home-city mention without duplicating provider fetches", async () => {
+    vi.stubEnv("GEMINI_API_KEY", "test-key-for-vitest");
+    const providerCalls = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      jsonResponse(makeOpenMeteoResponse())
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.includes("generativelanguage.googleapis.com")) {
+          return jsonResponse({
+            candidates: [
+              {
+                content: {
+                  parts: [
+                    {
+                      text: JSON.stringify({
+                        explanation: "Delhi air is moderate today.",
+                        actionNotes: [],
+                      }),
+                    },
+                  ],
+                },
+              },
+            ],
+          });
+        }
+        return providerCalls(url, init);
+      })
+    );
+
+    const res = await assistantPOST(
+      assistantRequest({
+        ...VALID_BODY,
+        question: "How is the air in Delhi today?",
+      })
+    );
+    const body = await res.json();
+    expect(body.queriedLocations).toEqual([
+      { label: "Delhi, Delhi", status: "home" },
+    ]);
+    // Home data comes from the single initial provider fetch.
+    expect(providerCalls).toHaveBeenCalledTimes(1);
   });
 
   it("degrades gracefully when Gemini returns 429", async () => {

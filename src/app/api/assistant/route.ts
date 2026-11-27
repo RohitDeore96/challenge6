@@ -4,24 +4,38 @@
  * The main flow endpoint (brief sections 6.2, 8.4):
  *   validated request -> air data (cached provider call)
  *   -> deterministic rule engine -> approved plan
- *   -> optional Gemini explanation (strictly validated)
+ *   -> Gemini explanation (strictly validated, always generated)
  *
- * Works fully without a Gemini key: the plan is deterministic and the AI
- * part degrades to an honest "unavailable" state.
+ * The AI explanation is part of every response: generating the plan always
+ * produces a natural-language briefing, and asking a question answers it.
+ * When the question mentions another place, the route resolves that place,
+ * fetches LIVE air-quality data for it (Open-Meteo) and hands the real
+ * numbers to the model - the AI quotes fetched data, it never invents.
+ *
+ * Works without a Gemini key: the plan is deterministic and the AI part
+ * degrades to an honest "unavailable" state.
  */
 
 import { NextResponse } from "next/server";
 import { assistantRequestSchema } from "@/lib/schemas";
+import type { QueriedLocation } from "@/lib/schemas";
 import { fetchAirQuality, categoryFromAir } from "@/lib/providers/openMeteo";
 import { generatePlan } from "@/lib/planner/rules";
 import { findBetterWindow, DEFAULT_WINDOW_OPTIONS } from "@/lib/planner/window";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { buildUserContent, SYSTEM_INSTRUCTION } from "@/lib/ai/prompt";
+import {
+  buildUserContent,
+  SYSTEM_INSTRUCTION,
+  type ExtraLocationData,
+} from "@/lib/ai/prompt";
 import { callGemini } from "@/lib/ai/gemini";
 import { validateAiOutput, sanitizeQuestion } from "@/lib/ai/validate";
+import { resolveQuestionLocations } from "@/lib/ai/question-locations";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// The question flow can chain geocoding + extra provider fetches + Gemini.
+export const maxDuration = 30;
 
 // Keep serverless requests bounded (brief section 10).
 const MAX_BODY_BYTES = 16 * 1024;
@@ -112,29 +126,59 @@ export async function POST(req: Request): Promise<NextResponse> {
     feedback: feedback ?? [],
   });
 
-  const wantsAi = question !== undefined && question.trim().length > 0;
-  if (!wantsAi) {
-    return NextResponse.json({ air, plan });
+  // Question flow: find real places mentioned in the question and fetch
+  // live data for each of them so the AI answers with real-world numbers.
+  const safeQuestion = question ? sanitizeQuestion(question) : null;
+  const extraLocations: ExtraLocationData[] = [];
+  let queriedLocations: QueriedLocation[] | undefined;
+
+  if (safeQuestion) {
+    const resolved = await resolveQuestionLocations(safeQuestion, {
+      label: safeLocation.label,
+      lat: safeLocation.lat,
+      lon: safeLocation.lon,
+    });
+
+    if (resolved.length > 0) {
+      queriedLocations = [];
+      for (const place of resolved.slice(0, 2)) {
+        if (place.relation === "home") {
+          queriedLocations.push({ label: place.label, status: "home" });
+          continue;
+        }
+        const extraAir = await fetchAirQuality(
+          { label: place.label, lat: place.lat, lon: place.lon },
+          { useCache: true }
+        );
+        if (extraAir.ok) {
+          extraLocations.push({ label: place.label, status: "ok", air: extraAir });
+          queriedLocations.push({ label: place.label, status: "ok" });
+        } else {
+          extraLocations.push({ label: place.label, status: "failed" });
+          queriedLocations.push({ label: place.label, status: "failed" });
+        }
+      }
+    }
   }
 
-  const safeQuestion = sanitizeQuestion(question!);
-  if (!safeQuestion) {
-    return NextResponse.json({ air, plan });
-  }
-
-  const geminiResult = await callGemini(SYSTEM_INSTRUCTION, buildUserContent({
-    locationLabel: safeLocation.label,
-    air,
-    profile,
-    plan,
-    question: safeQuestion,
-  }));
+  const geminiResult = await callGemini(
+    SYSTEM_INSTRUCTION,
+    buildUserContent({
+      locationLabel: safeLocation.label,
+      air,
+      profile,
+      plan,
+      question: safeQuestion ?? undefined,
+      extraLocations,
+    })
+  );
 
   if (!geminiResult.ok || !geminiResult.text) {
     return NextResponse.json({
       air,
       plan,
       ai: geminiResult.unavailable,
+      ...(queriedLocations ? { queriedLocations } : {}),
     });
   }
 
@@ -149,5 +193,6 @@ export async function POST(req: Request): Promise<NextResponse> {
     air,
     plan,
     ai: validated.explanation ?? validated.unavailable,
+    ...(queriedLocations ? { queriedLocations } : {}),
   });
 }

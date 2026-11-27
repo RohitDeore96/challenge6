@@ -33,6 +33,7 @@ import {
   type HouseholdProfile as HouseholdProfileData,
   type LocationInput,
   type Plan,
+  type QueriedLocation,
 } from "@/lib/schemas";
 
 const LS_LOCATION = "hawasathi.location.v1";
@@ -72,6 +73,7 @@ export function HawaSathiApp() {
 
   const [ai, setAi] = useState<AiExplanation | AiUnavailable | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [queried, setQueried] = useState<QueriedLocation[] | null>(null);
 
   const [feedback, setFeedback] = useState<Record<string, ActionVerdict>>(
     () => readJson<Record<string, ActionVerdict>>(LS_FEEDBACK) ?? {}
@@ -154,7 +156,9 @@ export function HawaSathiApp() {
     const data = await callAssistant({ prof, fb: feedback });
     if (data?.plan) {
       setPlan(data.plan);
-      setAi(null);
+      // The AI briefing is generated with the plan in the same request.
+      setAi(data.ai ?? null);
+      setQueried(data.queriedLocations ?? null);
     }
     setLoadingPlan(false);
   }
@@ -166,6 +170,7 @@ export function HawaSathiApp() {
     const data = await callAssistant({ prof: profile, question, fb: feedback });
     if (data?.ai) {
       setAi(data.ai);
+      setQueried(data.queriedLocations ?? null);
     }
     setAiLoading(false);
   }
@@ -177,10 +182,14 @@ export function HawaSathiApp() {
     else next[actionId] = verdict;
     setFeedback(next);
     writeJson(LS_FEEDBACK, next);
-    // Plan refresh without a question: no unnecessary Gemini call.
+    // Plan refresh: the AI briefing is regenerated with it in one request.
     setLoadingPlan(true);
     const data = await callAssistant({ prof: profile, fb: next });
-    if (data?.plan) setPlan(data.plan);
+    if (data?.plan) {
+      setPlan(data.plan);
+      setAi(data.ai ?? null);
+      setQueried(null);
+    }
     setLoadingPlan(false);
   }
 
@@ -280,8 +289,9 @@ export function HawaSathiApp() {
         <GeminiPanel
           onAsk={handleAsk}
           ai={ai}
-          loading={aiLoading}
+          loading={aiLoading || loadingPlan}
           disabled={profile === null}
+          queried={queried}
         />
 
         <CommunityShare air={air} disabled={profile === null} />
@@ -298,9 +308,10 @@ export function HawaSathiApp() {
               using CPCB category logic and are never mixed with the US AQI.
             </p>
             <p>
-              <strong>AI:</strong> gemini-3.5-flash-lite, called server-side
-              only, generates explanations for the deterministic plan - it never
-              calculates values or invents actions.
+              <strong>AI:</strong> a Gemini model (AI_MODEL setting, default
+              gemini-3.5-flash-lite), called server-side only, explains the
+              plan and answers questions using live fetched data - it never
+              calculates values or invents readings.
             </p>
           </div>
           <div className="space-y-2">

@@ -1,28 +1,69 @@
 "use client";
 
 /**
- * Optional grounded AI explanation panel (brief sections 6.2, 8).
- * - The question is user-triggered and rate-limited server-side.
- * - Responses are labelled with the exact model (gemini-3.5-flash-lite) and
- *   a disclaimer that the AI produces prose only, never data.
+ * AI explanation panel (brief sections 6.2, 8).
+ * - A natural-language briefing is generated with every plan; users can
+ *   additionally ask any question - including about other places, for which
+ *   the server fetches live data before the model is called.
+ * - Responses are labelled with the exact configured model (AI_MODEL,
+ *   default gemini-3.5-flash-lite) and a disclaimer that the AI produces
+ *   prose only, never data.
  * - Unavailable states are honest and the deterministic plan is untouched.
  */
 
 import { useState } from "react";
-import { Bot, Send } from "lucide-react";
+import { Bot, Globe2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { StepHeading } from "@/components/StepHeading";
-import type { AiExplanation, AiUnavailable } from "@/lib/schemas";
+import type { AiExplanation, AiUnavailable, QueriedLocation } from "@/lib/schemas";
 
 interface Props {
   onAsk: (question: string) => void;
   ai: AiExplanation | AiUnavailable | null;
   loading: boolean;
   disabled: boolean;
+  queried: QueriedLocation[] | null;
 }
 
-export function GeminiPanel({ onAsk, ai, loading, disabled }: Props) {
+function LiveLocationChips({ queried }: { queried: QueriedLocation[] }) {
+  const ok = queried.filter((q) => q.status === "ok");
+  const failed = queried.filter((q) => q.status === "failed");
+  const home = queried.filter((q) => q.status === "home");
+  if (ok.length === 0 && failed.length === 0 && home.length === 0) return null;
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+      {ok.map((q) => (
+        <span
+          key={`ok-${q.label}`}
+          className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-800"
+        >
+          <Globe2 aria-hidden="true" className="h-3 w-3" />
+          Live data fetched for {q.label}
+        </span>
+      ))}
+      {home.map((q) => (
+        <span
+          key={`home-${q.label}`}
+          className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2 py-0.5 font-medium text-teal-800"
+        >
+          {q.label} - your selected location
+        </span>
+      ))}
+      {failed.map((q) => (
+        <span
+          key={`failed-${q.label}`}
+          className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 font-medium text-amber-800"
+        >
+          No live data for {q.label} right now
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export function GeminiPanel({ onAsk, ai, loading, disabled, queried }: Props) {
   const [question, setQuestion] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -40,26 +81,27 @@ export function GeminiPanel({ onAsk, ai, loading, disabled }: Props) {
     onAsk(trimmed);
   }
 
+  const modelLabel = ai?.model ?? "a Gemini model (server-side)";
+
   return (
     <section
       aria-labelledby="ai-heading"
       className="card-shadow rounded-2xl border bg-card p-4 sm:p-6"
     >
-      <StepHeading step={5} title="Ask about your plan" />
+      <StepHeading step={5} title="AI briefing & answers" />
       <p className="mt-1 text-sm text-muted-foreground">
-        Optional. Answers come from{" "}
-        <code className="rounded bg-muted px-1 py-0.5 text-xs">
-          gemini-3.5-flash-lite
-        </code>{" "}
-        via a server route, grounded only in today&apos;s data and your
-        approved actions. The AI never calculates values or adds actions -
-        every number on this page comes from the deterministic engine.
+        A short briefing is generated with every plan. You can also ask
+        anything - including other places: if you name a city or locality, the
+        server first fetches{" "}
+        <strong>live air-quality data for that exact place</strong> and the AI
+        answers using those real numbers. It never invents readings, and every
+        value on this page still comes from the data engine.
       </p>
 
       <div className="mt-4 space-y-3">
         <Textarea
-          aria-label="Your question about today's plan"
-          placeholder="e.g. Why is walking excluded today? Which of these actions helps a young child most?"
+          aria-label="Your question about today's plan or any other place"
+          placeholder="e.g. What is the AQI in Mumbai right now? Which action helps my child most today?"
           className="min-h-20"
           maxLength={400}
           value={question}
@@ -78,7 +120,7 @@ export function GeminiPanel({ onAsk, ai, loading, disabled }: Props) {
             aria-busy={loading}
           >
             <Send aria-hidden="true" className="mr-2 h-4 w-4" />
-            {loading ? "Asking…" : "Ask"}
+            {loading ? "Thinking…" : "Ask"}
           </Button>
           {error ? (
             <span role="alert" className="text-sm text-destructive">
@@ -86,6 +128,8 @@ export function GeminiPanel({ onAsk, ai, loading, disabled }: Props) {
             </span>
           ) : null}
         </div>
+
+        {queried && !loading ? <LiveLocationChips queried={queried} /> : null}
 
         {loading ? (
           <div className="mt-2 space-y-2" role="status" aria-live="polite">
@@ -104,7 +148,7 @@ export function GeminiPanel({ onAsk, ai, loading, disabled }: Props) {
                 >
                   <Bot className="h-3.5 w-3.5" />
                 </span>
-                gemini-3.5-flash-lite · server-side call
+                {modelLabel} · server-side call
               </p>
               <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{ai.explanation}</p>
               {ai.actionNotes.length > 0 ? (

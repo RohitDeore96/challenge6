@@ -2,7 +2,8 @@
  * Server-side Gemini client (REST, no SDK).
  *
  * Security and reliability rules (brief sections 8.1 and 8.6):
- * - The model is EXACTLY gemini-3.5-flash-lite. No hidden fallback models.
+ * - The model comes from the AI_MODEL environment variable and defaults to
+ *   gemini-3.5-flash-lite. No hidden fallback models.
  * - Called only from server-side API routes; never from the browser.
  * - The API key comes from the GEMINI_API_KEY environment variable and is
  *   never logged, never returned to the client, never sent client-side.
@@ -12,7 +13,7 @@
  *   remains fully functional without Gemini.
  */
 
-import { GEMINI_MODEL } from "./prompt";
+import { resolveGeminiModel } from "./prompt";
 import type { AiUnavailable } from "@/lib/schemas";
 
 const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
@@ -39,7 +40,7 @@ function unavailable(
       status: "unavailable",
       reason,
       message,
-      model: GEMINI_MODEL,
+      model: resolveGeminiModel(),
     },
     meta,
   };
@@ -80,13 +81,13 @@ export async function callGemini(
     );
   }
 
-  const url = `${API_BASE}/${GEMINI_MODEL}:generateContent`;
+  const url = `${API_BASE}/${resolveGeminiModel()}:generateContent`;
   const body = JSON.stringify({
     systemInstruction: { parts: [{ text: systemInstruction }] },
     contents: [{ role: "user", parts: [{ text: userContent }] }],
     generationConfig: {
-      temperature: 0.4,
-      maxOutputTokens: 700,
+      temperature: 0.8,
+      maxOutputTokens: 1024,
       responseMimeType: "application/json",
     },
   });
