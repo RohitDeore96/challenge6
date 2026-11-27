@@ -23,23 +23,27 @@ Design: [PROMPT_DESIGN.md](PROMPT_DESIGN.md). Transport: `src/lib/ai/gemini.ts`
 | --- | --- | --- |
 | Response validation | `tests/ai-validation.test.ts` — 15 tests: unknown/duplicate action IDs, URLs, HTML, markdown, oversize output, empty payload | all pass |
 | Transport failure modes | `tests/api.test.ts` + `tests/provider.test.ts` — 429 → honest fallback; malformed HTTP; timeout; model-ID verification (the route asserts the configured model string) | all pass |
-| No-key behaviour, end-to-end | live POST `/api/assistant` with a question and an empty key | plan intact; AI state `unavailable / key_not_configured / gemini-3.5-flash-lite` — [evidence/06](evidence/06-assistant-ai-fallback-no-key.json) |
+| **Live model, deployed site** | two real questions POSTed to the **deployed** `/api/assistant` (2026-11-27) | both `status: "ok"`, `model: "gemini-3.5-flash-lite"`, schema-validated prose + 4 action notes each — [evidence/06](evidence/06-deployed-ai-answer-exclusion.json), [evidence/07](evidence/07-deployed-ai-answer-child.json); rendered UI: [screenshots/desktop-ai-answer.png](screenshots/desktop-ai-answer.png) |
+| No-key behaviour, end-to-end | live POST `/api/assistant` with a question and no key (local production build of the same commit) | plan intact; AI state `unavailable / key_not_configured / gemini-3.5-flash-lite` — [evidence/08](evidence/08-honest-fallback-no-key.json) |
 | Prompt hygiene | `tests/ai-validation.test.ts` asserts the prompt contains no coordinates and marks the user question untrusted | all pass |
-| Real browser fallback | Playwright on the production build: ask a question with no key → panel shows the honest unavailable message; plan remains | [screenshots/desktop-ai-fallback.png](screenshots/desktop-ai-fallback.png) |
+| Real browser fallback | scripted Chromium on a production build: ask a question with no key → panel shows the honest unavailable message; plan remains | [screenshots/desktop-ai-fallback.png](screenshots/desktop-ai-fallback.png) |
 
-## Live-model status (stated plainly)
+## Live-model result (recorded 2026-11-27, deployed site)
 
-**The live Gemini provider has not yet been exercised** in a recorded run: no
-`GEMINI_API_KEY` was available in the verification environment, and the
-project's honesty rules forbid claiming a live-model result that did not
-happen. The one thing a key cannot change is the contract above — validation
-and fallback are provider-independent and fully covered.
+With a free-tier key configured server-side on the deployment, two questions
+were captured verbatim from the deployed production site:
 
-**Pending (needs the maintainer's key):** a live smoke run — one question
-against the deployed or local server with `GEMINI_API_KEY` set — whose
-verbatim request/response would be committed to `docs/evidence/ai/` with the
-model label, following the same pattern as
-[LIVE_VERIFICATION.md](LIVE_VERIFICATION.md).
+| # | Question (abridged) | Result | Evidence |
+| --- | --- | --- | --- |
+| 1 | "Why were walking and cycling excluded from my commute alternatives today?" | `ok`; 494-char explanation grounded in the day's payload (Very Poor, PM2.5 186.3, estimate 355) + 4 notes referencing real action IDs (`breathe_shift_outdoor_window`, `breathe_sensitive_indoor_play`, `breathe_keep_windows_closed_peak`, `indoor_no_smoke_sources`) | [06-deployed-ai-answer-exclusion.json](evidence/06-deployed-ai-answer-exclusion.json) |
+| 2 | "Which of these actions helps a young child the most, and what should we do first this evening?" | `ok`; 589-char explanation + 4 notes, same contract | [07-deployed-ai-answer-child.json](evidence/07-deployed-ai-answer-child.json) |
+
+Both replies passed the full validation contract before reaching the UI:
+JSON shape, action IDs against the approved plan, no URLs/HTML/markdown/emoji,
+length caps. The rendered answer in the real interface is committed as
+[screenshots/desktop-ai-answer.png](screenshots/desktop-ai-answer.png). The
+verification window used a free-tier key that is deleted afterwards; the
+captures remain as the record of the run.
 
 ## Known limitations of the AI layer
 
@@ -49,3 +53,6 @@ model label, following the same pattern as
   fallback is the designed answer, not an error state.
 - The question is length-capped and sanitised; long pasted text is truncated
   rather than interpreted.
+- The live captures are point-in-time: a model can answer differently on a
+  different day (the grounding payload is in each evidence file, so the
+  quality of that day's grounding can be judged against it).

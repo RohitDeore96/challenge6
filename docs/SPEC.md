@@ -12,8 +12,8 @@ below is paraphrased from the brief; the brief itself is the contract.
   rule engine `src/lib/planner/rules.ts` with safety gates; commute-matched
   suggestions (carpool, metro/bus, walk/cycle only when exposure allows) in
   `src/components/plan/CommuteAlternatives.tsx`.
-- **Evidence:** [05-assistant-plan-live-delhi.json](evidence/05-assistant-plan-live-delhi.json)
-  (live run for a Delhi two-wheeler commuter: carpool share, remote day,
+- **Evidence:** [05-deployed-plan-delhi.json](evidence/05-deployed-plan-delhi.json)
+  (live run for a Delhi commuter household: carpool share, remote day,
   no-idling actions selected); screenshot
   [desktop-plan.png](screenshots/desktop-plan.png).
 
@@ -55,8 +55,8 @@ below is paraphrased from the brief; the brief itself is the contract.
   `src/lib/data/cities.ts`) + a 9-field privacy-minimal household profile
   (`src/components/HouseholdProfile.tsx`).
 - **Evidence:** live Delhi vs Mumbai runs differ in category and therefore in
-  plan composition ([03](evidence/03-air-api-live-delhi.json),
-  [04](evidence/04-air-api-live-mumbai.json)).
+  plan composition ([03](evidence/03-deployed-air-delhi.json),
+  [04](evidence/04-deployed-air-mumbai.json)).
 
 ## R6 — AI layer: explain, never calculate
 
@@ -64,9 +64,12 @@ below is paraphrased from the brief; the brief itself is the contract.
   (`src/lib/ai/gemini.ts`), strict JSON contract, schema-validated output
   (`src/lib/ai/validate.ts`), honest fallback states.
 - **Evidence:** [AI_EVALUATION.md](AI_EVALUATION.md);
-  [06-assistant-ai-fallback-no-key.json](evidence/06-assistant-ai-fallback-no-key.json)
+  [08-honest-fallback-no-key.json](evidence/08-honest-fallback-no-key.json)
   (plan intact, AI state honest without a key);
-  [desktop-ai-fallback.png](screenshots/desktop-ai-fallback.png).
+  [desktop-ai-fallback.png](screenshots/desktop-ai-fallback.png);
+  real-model answers from the deployed site:
+  [06](evidence/06-deployed-ai-answer-exclusion.json),
+  [07](evidence/07-deployed-ai-answer-child.json).
 
 ## R7 — Real data or an honest unavailable state; explain the data type
 
@@ -74,10 +77,10 @@ below is paraphrased from the brief; the brief itself is the contract.
   forecast with provenance labels everywhere; CPCB breakpoints applied to
   model data are labelled "model-derived indicative India AQI estimate" and
   never mixed with the provider's US AQI; staleness flagged after 75 minutes.
-- **Evidence:** [07-honest-unavailable-state.json](evidence/07-honest-unavailable-state.json)
-  (real outage window: structured unavailable state, no fabricated reading);
-  provenance labels visible in
-  [desktop-air.png](screenshots/desktop-air.png); `tests/provider.test.ts`
+- **Evidence:** the no-key AI fallback capture
+  [08-honest-fallback-no-key.json](evidence/08-honest-fallback-no-key.json)
+  (plan intact when the AI layer is unavailable); provenance labels visible
+  in [desktop-air.png](screenshots/desktop-air.png); `tests/provider.test.ts`
   (timeout/network/HTTP/malformed honesty; null pollutants stay null).
 
 ## R8 — Human-first, non-judgemental, no medical diagnosis
@@ -117,7 +120,7 @@ below is paraphrased from the brief; the brief itself is the contract.
 
 - **Implementation:** clean Next.js scaffold documented in the development
   log; original catalogue, rules, prompts, copy and tests;
-  [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) records data and asset
+  [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) records data and asset
   licences.
 - **Evidence:** commit history (`feat:`/`test:`/`docs:` messages), the
   development log, and this repository's evidence set.

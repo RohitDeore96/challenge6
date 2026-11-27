@@ -1,50 +1,70 @@
 # DEMO — evaluator walk-through (about 3 minutes)
 
 No API key is needed for any of this. The deterministic engine produces the
-plan; the AI panel either answers (if the deployment has a server-side key)
-or shows an honest "unavailable" state that says why.
+plan; the AI panel either answers (if the deployment has a server-side key —
+the live app currently has one) or shows an honest "unavailable" state that
+says why. Everything below runs against the
+**[live app](https://challenge6-phi.vercel.app/)**; the same steps work on a
+local build ([setup](../README.md#setup)).
 
-1. **Open the app.** The header carries the HawaSathi logo and the promise:
-   know what the air is like, what your household can do today, why it
-   matters, and what impact to expect.
-2. **Choose an area.** Type "Delhi" in the search box and pick Delhi. The app
-   fetches modelled air data for that grid cell.
-3. **Read the data honestly.** The summary shows the provider (Open-Meteo
-   Air Quality API, CAMS model), the freshness, the US AQI, and the separate
-   "model-derived indicative India AQI estimate" with its category and which
-   pollutants were included/excluded. Expand "Pollutant details and hourly
-   trend" for the PM2.5/PM10 chart.
-4. **Describe the household.** Pick a routine (e.g. "School / work
-   commute"), a commute mode ("Two-wheeler"), an optional one-way distance
-   (e.g. 8 km), a budget ("₹500-₹2,000"), tick indoor sources ("Incense /
-   dhoop", "Frequent frying"), and answer purifier / sensitive-member /
-   flexibility. Nothing is sent to an account — the note under the heading
-   says where it stays.
-5. **Generate today's plan.** Press "Generate today's plan". Three pillars
-   appear — Breathe safer today, Cleaner indoor air, Lower-emission routine —
-   each action with cost, effort, why it is suggested today, and a "How we
-   estimated this" impact section (type, units, formula, assumptions,
-   source). With no distance and no sourced factor, travel impacts stay
-   qualitative instead of guessed.
-6. **Disagree with an action.** Mark any action "Won't do" / "Already doing".
-   The plan rebuilds deterministically from the same air data — the AI is not
-   involved.
-7. **Ask why.** Type "Is it safe for my children to play outside today?" in
-   the ask panel. With a key configured, the answer is grounded in today's
-   values and the approved action list (the model label is shown). Without a
-   key, the panel says the AI explanation is unavailable and the plan stays
-   fully usable — this is the designed fallback, not an error.
-8. **Share.** Copy the community bulletin: a locality-level summary with the
-   same provenance labels and three community actions. The app never posts
-   anything automatically.
+1. **Open the app.** The gradient hero carries the HawaSathi logo, the
+   Hindi name (हवासाथी), the promise — know what the air is like, what your
+   household can do today, why it matters, and what impact to expect — and
+   four capability chips ("Modelled air data", "Deterministic plan", "AI
+   explains, never invents", "No sign-up, no tracking").
+2. **Choose an area (step 1).** Type "Delhi" in the search box and pick
+   Delhi. The selected area appears as a green chip next to the heading.
+3. **Read the data honestly (step 2).** The summary shows the provider
+   (Open-Meteo Air Quality API, modelled area-level forecast), the freshness
+   ("Fresh · just now"), the **US AQI**, and the separate **"India AQI
+   estimate"** as a hero card: the big model-derived number, its category,
+   and a category-coloured 0-500 gauge with a marker. Sub-index coverage and
+   excluded pollutants are listed; expand "Data limitations" for caveats and
+   the model-grid note. "Pollutant details and hourly trend" below has the
+   current values table and the next-24-hours PM2.5/PM10 forecast chart.
+4. **Describe the household (step 3).** Pick a routine ("Mixed routine"), a
+   commute mode ("Car"), an optional one-way distance (8 km), a budget
+   ("Under ₹500"), tick "Incense / dhoop" under indoor sources, and answer
+   purifier / sensitive-member / cooking fuel / flexibility. Nothing is sent
+   to an account — the note under the heading says where it stays.
+5. **Generate today's plan.** Press "Generate today's plan". The plan card
+   shows the day's category ("Built for a very poor day from modelled
+   area-level forecast") and the timing analysis: "Potentially better window
+   for outdoor time" with the honest same-series comparison. Three pillars
+   follow — Breathe safer today, Cleaner indoor air, Lower-emission routine —
+   each action with a confidence pill, cost, effort, a "Why this today?"
+   explainer, an "IMPACT" box, and a "How is this number calculated?" formula
+   breakdown where a sourced factor exists. With no distance and no sourced
+   factor, travel impacts stay qualitative instead of guessed.
+6. **Disagree with an action.** Mark any card "Using this action" or "Not
+   practical for us". The plan rebuilds deterministically from the same air
+   data — the AI is not involved — and the pill on the heading ("N actions
+   marked as used") updates.
+7. **Ask why (step 5).** Type "Why were walking and cycling excluded from my
+   commute alternatives today?" in the ask panel. With a key configured, the
+   answer card is labelled `gemini-3.5-flash-lite · server-side call` and
+   grounded in today's values and the approved action list, with per-action
+   notes and a disclaimer ([real captured
+   answer](screenshots/desktop-ai-answer.png)). Without a key, the panel says
+   the AI explanation is unavailable (with the reason) and the plan stays
+   fully usable — this is the designed fallback
+   ([screenshot](screenshots/desktop-ai-fallback.png)), not an error.
+8. **Share (step 6).** Copy the community bulletin: a locality-level summary
+   with the same provenance labels and three community actions. The app never
+   posts anything automatically and never includes household details.
 9. **Mobile.** Repeat steps 2–5 on a 390 px viewport; the same flow works
-   without horizontal scrolling (screenshot: `mobile-390-plan.png`).
+   without horizontal scrolling (screenshot:
+   [mobile-390-plan.png](screenshots/mobile-390-plan.png)).
 
 ## Scripts used for the committed evidence
 
-The screenshots in `docs/screenshots/` were captured from the real
-production build (`next start`) against live provider data, with a scripted
-household profile identical to step 4. The JSON files in `docs/evidence/`
-are verbatim captured responses of the running app's own API routes (see
+The screenshots in `docs/screenshots/` were captured from the **real deployed
+site** ([challenge6-phi.vercel.app](https://challenge6-phi.vercel.app/)) with
+a scripted household profile identical to step 4, except
+[screenshots/desktop-ai-fallback.png](screenshots/desktop-ai-fallback.png),
+which comes from a local production build of the same commit without a key
+(the deployed site has one, so its fallback state cannot be photographed).
+The JSON files in `docs/evidence/` are verbatim captured responses of the
+deployed site's own API routes and of the raw provider (see
 [LIVE_VERIFICATION.md](LIVE_VERIFICATION.md) for the exact commands and
 timestamps).

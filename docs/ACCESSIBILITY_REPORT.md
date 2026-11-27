@@ -10,15 +10,15 @@ in the code and the parts of them that were exercised during verification
 | Measure | Where | Detail |
 | --- | --- | --- |
 | Skip link | `src/components/HawaSathiApp.tsx` | "Skip to main content" link, visually hidden until focused, targets `#main` |
-| Landmarks and headings | app shell | `<header>`, `<main id="main">`, `<footer>`; numbered section headings (`1. Choose your area` … `6. Community bulletin`) give the page a navigable outline |
+| Landmarks and headings | app shell | `<header>`, `<main id="main">`, `<footer>`; section headings use a shared `StepHeading` component — a visible numbered chip (decorative, `aria-hidden`) plus an `sr-only` "Step N:" prefix, so the page keeps a navigable heading outline ("Step 1: Choose your area" … "Step 6: Community bulletin") |
 | Fieldset/legend grouping | `HouseholdProfile.tsx` | form fields grouped in `<fieldset>`s with `sr-only` legends ("Daily routine and commute", "Household equipment and flexibility") |
 | Label association | forms | every control has a `<Label htmlFor>` tied by id; selects have accessible names |
 | Icon-only affordances | `LocationPicker.tsx` | search input carries `aria-label="Search for your city or locality"`; decorative icons marked `aria-hidden` |
 | Status regions | app shell | page-level errors render in `role="alert"`; loading states via `aria-busy` on the submit button and `role="status"` skeletons on the server shell |
 | Evidence-based feedback | `ActionCard.tsx` | verdict chips are real buttons with visible text (not icon-only), so the state change is announced as a normal button |
 | Focus visibility | globals | Tailwind focus rings on interactive elements; the skip link is the first tab stop |
-| Colour and category | `AirQualitySummary.tsx` | AQI categories use colour **and** a text label ("Very Poor"), never colour alone; both index systems are labelled in text |
-| Reduced motion | Tailwind v4 defaults | no custom animations beyond the skeleton pulse; `prefers-reduced-motion` handling is inherited from the framework defaults |
+| Colour and category | `AirQualitySummary.tsx` | AQI categories use colour **and** a text label ("Very Poor"), never colour alone; both index systems are labelled in text. The 0-500 gauge is decorative colour plus a numeric axis; it carries `role="img"` with a text alternative stating where the current estimate falls on the scale, and the number + category are always rendered as text beside it |
+| Reduced motion | `globals.css` | explicit `prefers-reduced-motion` block forces animation/transition durations to 0.01 ms (covers the skeleton pulse and the AQI gauge marker slide) |
 | Touch targets | forms/plan | controls use `min-h-11` (44 px) trigger heights on the primary selectors and buttons |
 
 ## Exercised during verification (2026-11-27)

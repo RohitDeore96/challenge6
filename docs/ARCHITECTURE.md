@@ -62,6 +62,5 @@ Open-Meteo Air Quality API        Gemini API
 
 ## Static output
 
-`next build` produces a static page plus two dynamic routes; `output:
-"standalone"` keeps containers self-contained. Vercel detects Next.js and
-applies the security headers from `vercel.json`.
+`next build` produces a static page plus two dynamic routes. Vercel detects
+Next.js and applies the security headers from `vercel.json`.

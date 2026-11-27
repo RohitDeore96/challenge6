@@ -2,16 +2,17 @@
 
 **Recorded verification, 2026-11-27 (UTC)** — one recorded run against
 `main` (fresh clone at `e1bf89b`, fixes applied during the run, re-verified
-after each fix; see [../worklog.md](../worklog.md)). These are the results of
-that recorded run, not a live status.
+after each fix; see [../worklog.md](../worklog.md)), re-run at `e60ac77`
+(the current UI overhaul) before the deployed-site evidence capture. These
+are the results of those recorded runs, not a live status.
 
 | Gate | Command | Recorded result |
 | --- | --- | --- |
 | Install | `bun install --frozen-lockfile` | 470 packages, clean |
 | Lint | `bun run lint` | exit 0 |
 | Typecheck | `bun run typecheck` (`tsc --noEmit`) | exit 0 |
-| Tests | `bun test` | **93 passed / 0 failed** across 7 files |
-| Build | `GEMINI_API_KEY="" bun run build` | exit 0; no warnings; the key-less build is intentional (the app must degrade honestly) |
+| Tests | `bun run test` (vitest) | **93 passed / 0 failed** across 7 files |
+| Build | `bun run build` | exit 0; no warnings |
 
 ## Tests per file (recorded)
 
@@ -25,21 +26,30 @@ that recorded run, not a live status.
 | `tests/provider.test.ts` | 9 | provider parsing, staleness labelling, timeout/network/HTTP/malformed honesty, null pollutants stay null |
 | `tests/window.test.ts` | 7 | better-window thresholds, small-difference honesty, invalid time handling, forecast horizon |
 
-## Recorded live-API observations (same run)
+## Recorded live-API observations (2026-11-27, deployed site)
 
 - Delhi grid cell: US AQI 220, indicative India AQI estimate 355 ("Very
-  Poor"), freshness fresh — [evidence/03](evidence/03-air-api-live-delhi.json)
+  Poor"), freshness fresh —
+  [evidence/03](evidence/03-deployed-air-delhi.json)
 - Mumbai grid cell: US AQI 189, indicative estimate 184 ("Moderately
-  polluted") — [evidence/04](evidence/04-air-api-live-mumbai.json)
+  polluted") — [evidence/04](evidence/04-deployed-air-mumbai.json)
 - Delhi plan for the scripted commuter household: 9 actions across the three
-  pillars — [evidence/05](evidence/05-assistant-plan-live-delhi.json)
+  pillars, 9 honest exclusions —
+  [evidence/05](evidence/05-deployed-plan-delhi.json)
+- Two real `gemini-3.5-flash-lite` answers from the deployed site, both
+  schema-validated — [evidence/06](evidence/06-deployed-ai-answer-exclusion.json),
+  [evidence/07](evidence/07-deployed-ai-answer-child.json)
+- No-key fallback on a local build of the same commit: plan intact, honest
+  unavailable state — [evidence/08](evidence/08-honest-fallback-no-key.json)
+- Browser console on the deployed site, clean profile: zero messages, zero
+  page errors ([LIVE_VERIFICATION.md](LIVE_VERIFICATION.md), check #9)
 
 ## Not yet measured (honest gaps)
 
 - No coverage percentage is enforced or claimed yet (no coverage tooling in
   CI; the named safety-rule suites are the current bar).
-- No Playwright E2E suite runs in CI; the browser journey was executed
-  manually/scripted during verification (see
+- No Playwright E2E suite runs in CI; the browser journey was executed by
+  scripted browser during verification (see
   [LIVE_VERIFICATION.md](LIVE_VERIFICATION.md)) but is not automated yet.
 - No axe accessibility scan has been recorded; see
   [ACCESSIBILITY_REPORT.md](ACCESSIBILITY_REPORT.md) for what is implemented

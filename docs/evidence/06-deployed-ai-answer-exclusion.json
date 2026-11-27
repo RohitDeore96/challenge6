@@ -1,0 +1,766 @@
+{
+  "air": {
+    "ok": true,
+    "location": {
+      "lat": 28.61,
+      "lon": 77.21,
+      "label": "Delhi (Delhi)",
+      "gridNote": "Approximate area for lat/lon rounded to 2 decimals; values represent a model grid cell, not an exact address."
+    },
+    "source": {
+      "provider": "Open-Meteo Air Quality API",
+      "model": "CAMService global atmospheric composition forecast (area-level model data)",
+      "dataType": "modelled area-level forecast",
+      "docsUrl": "https://open-meteo.com/en/docs/air-quality-api"
+    },
+    "fetchedAt": "2026-11-27T14:55:08.020Z",
+    "freshness": {
+      "status": "fresh",
+      "ageMinutes": 0,
+      "stalenessNote": "Updated 0 minutes ago (provider reference time)."
+    },
+    "current": {
+      "time": "2026-11-27T19:30",
+      "pm25": 186.3,
+      "pm10": 188.1,
+      "usAqi": 220
+    },
+    "derivedIndiaAqi": {
+      "status": "available",
+      "value": 355,
+      "category": "Very Poor",
+      "subIndices": {
+        "PM2.5": 355,
+        "PM10": 162,
+        "NO2": 110,
+        "SO2": 101,
+        "CO": 128,
+        "O3": 39
+      },
+      "pollutantsIncluded": [
+        "PM2.5",
+        "PM10",
+        "NO2",
+        "SO2",
+        "CO",
+        "O3"
+      ],
+      "pollutantsExcluded": [
+        "NH3"
+      ],
+      "label": "model-derived indicative India AQI estimate",
+      "note": "CPCB-style breakpoints applied to CAMS model data with documented averaging-window coverage. This is NOT an official CPCB AQI and not a station reading."
+    },
+    "hourly": [
+      {
+        "time": "2026-11-26T00:00",
+        "pm25": 156,
+        "pm10": 158.3
+      },
+      {
+        "time": "2026-11-26T01:00",
+        "pm25": 153.2,
+        "pm10": 155.5
+      },
+      {
+        "time": "2026-11-26T02:00",
+        "pm25": 151.8,
+        "pm10": 154.1
+      },
+      {
+        "time": "2026-11-26T03:00",
+        "pm25": 150.9,
+        "pm10": 153.2
+      },
+      {
+        "time": "2026-11-26T04:00",
+        "pm25": 150.4,
+        "pm10": 152.7
+      },
+      {
+        "time": "2026-11-26T05:00",
+        "pm25": 140.6,
+        "pm10": 142.5
+      },
+      {
+        "time": "2026-11-26T06:00",
+        "pm25": 144.4,
+        "pm10": 146.2
+      },
+      {
+        "time": "2026-11-26T07:00",
+        "pm25": 160.2,
+        "pm10": 162.1
+      },
+      {
+        "time": "2026-11-26T08:00",
+        "pm25": 157.9,
+        "pm10": 158.8
+      },
+      {
+        "time": "2026-11-26T09:00",
+        "pm25": 132.7,
+        "pm10": 133.6
+      },
+      {
+        "time": "2026-11-26T10:00",
+        "pm25": 104.3,
+        "pm10": 105.7
+      },
+      {
+        "time": "2026-11-26T11:00",
+        "pm25": 79.4,
+        "pm10": 80.8
+      },
+      {
+        "time": "2026-11-26T12:00",
+        "pm25": 60.5,
+        "pm10": 62.2
+      },
+      {
+        "time": "2026-11-26T13:00",
+        "pm25": 51.5,
+        "pm10": 53.2
+      },
+      {
+        "time": "2026-11-26T14:00",
+        "pm25": 48.3,
+        "pm10": 50.2
+      },
+      {
+        "time": "2026-11-26T15:00",
+        "pm25": 46.8,
+        "pm10": 48.8
+      },
+      {
+        "time": "2026-11-26T16:00",
+        "pm25": 56.2,
+        "pm10": 57.7
+      },
+      {
+        "time": "2026-11-26T17:00",
+        "pm25": 89.9,
+        "pm10": 92.4
+      },
+      {
+        "time": "2026-11-26T18:00",
+        "pm25": 108.3,
+        "pm10": 110.6
+      },
+      {
+        "time": "2026-11-26T19:00",
+        "pm25": 123.9,
+        "pm10": 126.2
+      },
+      {
+        "time": "2026-11-26T20:00",
+        "pm25": 138.3,
+        "pm10": 140.6
+      },
+      {
+        "time": "2026-11-26T21:00",
+        "pm25": 149.5,
+        "pm10": 151.3
+      },
+      {
+        "time": "2026-11-26T22:00",
+        "pm25": 157.9,
+        "pm10": 159.7
+      },
+      {
+        "time": "2026-11-26T23:00",
+        "pm25": 161.1,
+        "pm10": 163.4
+      },
+      {
+        "time": "2026-11-27T00:00",
+        "pm25": 160.2,
+        "pm10": 162.1
+      },
+      {
+        "time": "2026-11-27T01:00",
+        "pm25": 159.7,
+        "pm10": 161.6
+      },
+      {
+        "time": "2026-11-27T02:00",
+        "pm25": 161.1,
+        "pm10": 163
+      },
+      {
+        "time": "2026-11-27T03:00",
+        "pm25": 162.5,
+        "pm10": 164.4
+      },
+      {
+        "time": "2026-11-27T04:00",
+        "pm25": 163.9,
+        "pm10": 165.3
+      },
+      {
+        "time": "2026-11-27T05:00",
+        "pm25": 195.6,
+        "pm10": 197.9
+      },
+      {
+        "time": "2026-11-27T06:00",
+        "pm25": 202.6,
+        "pm10": 204.9
+      },
+      {
+        "time": "2026-11-27T07:00",
+        "pm25": 224,
+        "pm10": 226.3
+      },
+      {
+        "time": "2026-11-27T08:00",
+        "pm25": 241.2,
+        "pm10": 243.1
+      },
+      {
+        "time": "2026-11-27T09:00",
+        "pm25": 196.5,
+        "pm10": 197.9
+      },
+      {
+        "time": "2026-11-27T10:00",
+        "pm25": 139.7,
+        "pm10": 141.6
+      },
+      {
+        "time": "2026-11-27T11:00",
+        "pm25": 112.2,
+        "pm10": 114.3
+      },
+      {
+        "time": "2026-11-27T12:00",
+        "pm25": 85.7,
+        "pm10": 87.5
+      },
+      {
+        "time": "2026-11-27T13:00",
+        "pm25": 71.5,
+        "pm10": 73.3
+      },
+      {
+        "time": "2026-11-27T14:00",
+        "pm25": 65.7,
+        "pm10": 67.5
+      },
+      {
+        "time": "2026-11-27T15:00",
+        "pm25": 64.5,
+        "pm10": 66.1
+      },
+      {
+        "time": "2026-11-27T16:00",
+        "pm25": 82.9,
+        "pm10": 84.5
+      },
+      {
+        "time": "2026-11-27T17:00",
+        "pm25": 119.7,
+        "pm10": 121.1
+      },
+      {
+        "time": "2026-11-27T18:00",
+        "pm25": 155.1,
+        "pm10": 156.5
+      },
+      {
+        "time": "2026-11-27T19:00",
+        "pm25": 186.3,
+        "pm10": 188.1
+      },
+      {
+        "time": "2026-11-27T20:00",
+        "pm25": 213.3,
+        "pm10": 214.7
+      },
+      {
+        "time": "2026-11-27T21:00",
+        "pm25": 236.1,
+        "pm10": 238
+      },
+      {
+        "time": "2026-11-27T22:00",
+        "pm25": 254.3,
+        "pm10": 256.1
+      },
+      {
+        "time": "2026-11-27T23:00",
+        "pm25": 261.7,
+        "pm10": 262.6
+      },
+      {
+        "time": "2026-11-28T00:00",
+        "pm25": 255.2,
+        "pm10": 257
+      },
+      {
+        "time": "2026-11-28T01:00",
+        "pm25": 247.7,
+        "pm10": 249.6
+      },
+      {
+        "time": "2026-11-28T02:00",
+        "pm25": 238.4,
+        "pm10": 240.3
+      },
+      {
+        "time": "2026-11-28T03:00",
+        "pm25": 229.6,
+        "pm10": 231
+      },
+      {
+        "time": "2026-11-28T04:00",
+        "pm25": 221.2,
+        "pm10": 222.6
+      },
+      {
+        "time": "2026-11-28T05:00",
+        "pm25": 215.6,
+        "pm10": 217
+      },
+      {
+        "time": "2026-11-28T06:00",
+        "pm25": 217,
+        "pm10": 218.4
+      },
+      {
+        "time": "2026-11-28T07:00",
+        "pm25": 231.9,
+        "pm10": 232.8
+      },
+      {
+        "time": "2026-11-28T08:00",
+        "pm25": 234.7,
+        "pm10": 235.6
+      },
+      {
+        "time": "2026-11-28T09:00",
+        "pm25": 197.4,
+        "pm10": 198.4
+      },
+      {
+        "time": "2026-11-28T10:00",
+        "pm25": 149.5,
+        "pm10": 150.9
+      },
+      {
+        "time": "2026-11-28T11:00",
+        "pm25": 125.7,
+        "pm10": 127.1
+      },
+      {
+        "time": "2026-11-28T12:00",
+        "pm25": 104.8,
+        "pm10": 106.4
+      },
+      {
+        "time": "2026-11-28T13:00",
+        "pm25": 94.5,
+        "pm10": 96.2
+      },
+      {
+        "time": "2026-11-28T14:00",
+        "pm25": 90.3,
+        "pm10": 92
+      },
+      {
+        "time": "2026-11-28T15:00",
+        "pm25": 88.5,
+        "pm10": 90.1
+      },
+      {
+        "time": "2026-11-28T16:00",
+        "pm25": 112.2,
+        "pm10": 113.4
+      },
+      {
+        "time": "2026-11-28T17:00",
+        "pm25": 151.3,
+        "pm10": 152.7
+      },
+      {
+        "time": "2026-11-28T18:00",
+        "pm25": 183.9,
+        "pm10": 185.3
+      },
+      {
+        "time": "2026-11-28T19:00",
+        "pm25": 209.1,
+        "pm10": 210.5
+      },
+      {
+        "time": "2026-11-28T20:00",
+        "pm25": 228.2,
+        "pm10": 229.6
+      },
+      {
+        "time": "2026-11-28T21:00",
+        "pm25": 243.1,
+        "pm10": 244
+      },
+      {
+        "time": "2026-11-28T22:00",
+        "pm25": 252.4,
+        "pm10": 253.3
+      },
+      {
+        "time": "2026-11-28T23:00",
+        "pm25": 252.4,
+        "pm10": 253.3
+      }
+    ],
+    "caveats": [
+      "Modelled area-level forecast (CAMS via Open-Meteo), not a CPCB station reading; street-level values can differ substantially.",
+      "Global forecast grid is coarse; conditions can vary by street, time and indoor environment.",
+      "US AQI (Open-Meteo) and the model-derived indicative India AQI estimate are different systems and are never merged."
+    ]
+  },
+  "plan": {
+    "generatedAt": "2026-11-27T14:55:09.470Z",
+    "airSummary": {
+      "categoryLabel": "Very Poor",
+      "categoryValue": 355,
+      "dataSourceType": "modelled area-level forecast"
+    },
+    "pillars": {
+      "breathe": [
+        {
+          "id": "breathe_shift_outdoor_window",
+          "pillar": "breathe",
+          "title": "Move outdoor time to the cleaner window",
+          "instruction": "Schedule today's outdoor errands, walks or play time inside the forecast cleaner window instead of the peak-pollution hours.",
+          "costBand": "zero",
+          "costNote": "No cost - timing change only.",
+          "effortMinutes": 0,
+          "confidence": "medium",
+          "assumptions": [
+            "Model forecast timing is approximate and can shift during the day.",
+            "Applies only to activities that can be rescheduled."
+          ],
+          "methodology": "Selected only when the hourly PM2.5 forecast shows a sufficiently cleaner contiguous window; see lib/planner/window.ts and docs/DATA_METHODOLOGY.md.",
+          "source": {
+            "name": "WHO - Air pollution, personal interventions and risk communication",
+            "url": "https://www.who.int/news-room/questions-and-answers/item/air-pollution-personal-interventions-and-risk-communication"
+          },
+          "relevance": 92,
+          "why": "Hourly PM2.5 forecast for Delhi (Delhi) shows a potentially better window around 2026-11-28T14:00 to 2026-11-28T15:00: forecast mean ~89.4 ug/m3 vs ~224.7 ug/m3 in the next hours (-60%).",
+          "impact": {
+            "type": "outdoor_exposure",
+            "display": "Roughly 45 minutes of optional outdoor time can move to a cleaner period (shifting outdoor time into the cleaner window). No precise health benefit is claimed.",
+            "qualitative": "Exposure-reduction action; benefit is qualitative and depends on actual activity timing."
+          }
+        },
+        {
+          "id": "breathe_sensitive_indoor_play",
+          "pillar": "breathe",
+          "title": "Keep sensitive members' activity indoors today",
+          "instruction": "Shift children's outdoor play and older family members' outdoor exertion to indoor alternatives during the polluted hours.",
+          "costBand": "zero",
+          "costNote": "No cost.",
+          "effortMinutes": 0,
+          "confidence": "high",
+          "assumptions": [
+            "General public-health information; not personalised medical advice."
+          ],
+          "methodology": "Boosted when the household flags a more sensitive member and the category is Poor or worse. Never states a diagnosis or a health percentage.",
+          "source": {
+            "name": "WHO - Air pollution, personal interventions and risk communication",
+            "url": "https://www.who.int/news-room/questions-and-answers/item/air-pollution-personal-interventions-and-risk-communication"
+          },
+          "relevance": 90,
+          "why": "The household includes a more sensitive member and the indicative category is very poor; shifting their outdoor activity today is the precaution the WHO advisory logic supports.",
+          "impact": {
+            "type": "outdoor_exposure",
+            "display": "Roughly 90 minutes of optional outdoor time can move to a cleaner period (moving a sensitive member's outdoor time indoors for the day). No precise health benefit is claimed.",
+            "qualitative": "Exposure-reduction action; benefit is qualitative and depends on actual activity timing."
+          }
+        },
+        {
+          "id": "breathe_keep_windows_closed_peak",
+          "pillar": "breathe",
+          "title": "Keep windows shut during peak hours",
+          "instruction": "Keep windows and doors closed during the highest-pollution hours today, then air the home out only when the forecast improves.",
+          "costBand": "zero",
+          "costNote": "No cost.",
+          "effortMinutes": 0,
+          "confidence": "medium",
+          "assumptions": [
+            "Indoor sources still need ventilation later; this is a peak-hours measure only.",
+            "If your home has strong indoor smoke sources, closing windows alone will not fix air quality."
+          ],
+          "methodology": "Triggered when outdoor category is Very Poor or Severe AND no sufficiently cleaner ventilation window exists in the forecast.",
+          "source": {
+            "name": "US EPA - Air cleaners and air filters for the home",
+            "url": "https://www.epa.gov/indoor-air-quality-iaq/air-cleaners-and-air-filters-home"
+          },
+          "relevance": 88,
+          "why": "With very poor levels in Delhi (Delhi) and only a short cleaner window in the forecast, keeping windows closed during the worst hours limits outdoor PM entering your home.",
+          "impact": {
+            "type": "indoor_source_control",
+            "display": "Keeps the worst outdoor hours from raising indoor PM; qualitative benefit only.",
+            "qualitative": "Indoor source control reduces the source itself; no percentage reduction is claimed without a measurement in your home."
+          }
+        }
+      ],
+      "indoor": [
+        {
+          "id": "indoor_no_smoke_sources",
+          "pillar": "indoor",
+          "title": "Stop indoor smoke sources",
+          "instruction": "Do not smoke, burn incense/dhoop, or use mosquito coils indoors today; find smoke-free alternatives for the rest of the season.",
+          "costBand": "zero",
+          "costNote": "No cost; substitutes (mosquito repellent lotions, electric vaporisers) cost about the same or less than coils over a season (estimate).",
+          "effortMinutes": 10,
+          "confidence": "high",
+          "assumptions": [
+            "Applies only to sources the household actually uses.",
+            "No percentage reduction is claimed; benefit depends on how much the source is used."
+          ],
+          "methodology": "Source control is the highest-priority indoor measure in EPA guidance: removing the source beats diluting it. Boosted when the profile flags smoking, incense or coils.",
+          "source": {
+            "name": "US EPA - Indoor air quality basics",
+            "url": "https://www.epa.gov/air-quality/indoor-air-quality"
+          },
+          "relevance": 96,
+          "why": "Your profile flags indoor smoke sources (smoking/incense/mosquito coils). Removing the source is the single most effective indoor step per EPA guidance, and today's very poor outdoor air makes indoor smoke worse, not better.",
+          "impact": {
+            "type": "indoor_source_control",
+            "display": "Removes the indoor PM source itself; benefit scales with how much the source was used. No percentage claimed.",
+            "qualitative": "Indoor source control reduces the source itself; no percentage reduction is claimed without a measurement in your home."
+          }
+        },
+        {
+          "id": "indoor_zero_cost_source_control",
+          "pillar": "indoor",
+          "title": "Start with zero-cost source control",
+          "instruction": "Before spending on gadgets: remove smoke sources, damp-dust, cook with the exhaust on, and keep the most-used room closed and clean.",
+          "costBand": "zero",
+          "costNote": "No cost.",
+          "effortMinutes": 30,
+          "confidence": "high",
+          "assumptions": [
+            "Source control is the first-line measure regardless of budget."
+          ],
+          "methodology": "Prioritised for households with zero or low budget and no purifier (EPA source-control hierarchy). No devices are promoted as certified protection.",
+          "source": {
+            "name": "US EPA - Indoor air quality basics",
+            "url": "https://www.epa.gov/air-quality/indoor-air-quality"
+          },
+          "relevance": 84,
+          "why": "Source control comes before any device purchase in EPA guidance.",
+          "impact": {
+            "type": "indoor_source_control",
+            "display": "Targets indoor sources directly; no percentage claimed.",
+            "qualitative": "Indoor source control reduces the source itself; no percentage reduction is claimed without a measurement in your home."
+          }
+        },
+        {
+          "id": "indoor_damp_dusting",
+          "pillar": "indoor",
+          "title": "Dust with a damp cloth, not a dry broom",
+          "instruction": "Switch today's dusting/mopping to damp cloths and mops so dust is picked up instead of being resuspended into the air.",
+          "costBand": "zero",
+          "costNote": "No cost.",
+          "effortMinutes": 20,
+          "confidence": "high",
+          "assumptions": [
+            "Qualitative benefit; no reduction percentage is claimed."
+          ],
+          "methodology": "Dry sweeping resuspends settled particles; damp cleaning is standard low-cost guidance in EPA consumer materials.",
+          "source": {
+            "name": "US EPA - Indoor air quality basics",
+            "url": "https://www.epa.gov/air-quality/indoor-air-quality"
+          },
+          "relevance": 55,
+          "why": "Damp dusting is a zero-cost default that helps in every season.",
+          "impact": {
+            "type": "indoor_source_control",
+            "display": "Avoids resuspending settled dust; no percentage claimed.",
+            "qualitative": "Indoor source control reduces the source itself; no percentage reduction is claimed without a measurement in your home."
+          }
+        }
+      ],
+      "emission": [
+        {
+          "id": "emission_carpool_share",
+          "pillar": "emission",
+          "title": "Share the car ride",
+          "instruction": "Carpool with colleagues or neighbours heading the same way, so the same trip carries more people in one vehicle.",
+          "costBand": "zero",
+          "costNote": "No cost; usually saves money per person.",
+          "effortMinutes": 15,
+          "confidence": "medium",
+          "assumptions": [
+            "Impact assumes ~3 occupants sharing the car; adjust mentally if different."
+          ],
+          "methodology": "Vehicle emission factor divided by occupancy in lib/impact/emissions.ts, with the assumption documented on the card.",
+          "source": {
+            "name": "UK DEFRA/BEIS GHG conversion factors 2024",
+            "url": "https://www.gov.uk/government/publications/government-conversion-factors-for-company-reporting"
+          },
+          "relevance": 74,
+          "why": "Your car commute can carry more people in the same vehicle; sharing splits the per-person emissions of the same trip.",
+          "impact": {
+            "type": "travel_emissions",
+            "display": "Estimated ~1.82 kg CO2e/day avoided for your 8 km one-way trips (car -> shared car / carpool). Applies to your trip, not to the city's air quality.",
+            "numeric": {
+              "value": 1.82,
+              "unit": "kg CO2e/day",
+              "formula": "distance_km x (baseline 0.1702 - alternative 0.0567 kg CO2e per person-km) x 2 trips (carpool: vehicle factor / 3 occupants)",
+              "assumptions": [
+                "Indicative public emission factors, not India-certified measured values.",
+                "Direct tailpipe CO2e only; no upstream fuel/electricity production included.",
+                "Assumes 2 one-way trips per day for this mode shift."
+              ],
+              "source": {
+                "name": "UK DEFRA/BEIS GHG conversion factors 2024 - average car (unknown fuel)",
+                "url": "https://www.gov.uk/government/publications/government-conversion-factors-for-company-reporting",
+                "year": 2024
+              }
+            }
+          }
+        },
+        {
+          "id": "emission_no_idle",
+          "pillar": "emission",
+          "title": "Switch off while waiting",
+          "instruction": "Turn the engine off when parked outside school, shops or gates; idling for more than ~10 seconds wastes more fuel than restarting.",
+          "costBand": "zero",
+          "costNote": "No cost; saves fuel.",
+          "effortMinutes": 0,
+          "confidence": "high",
+          "assumptions": [
+            "No numeric CO2 claim; the benefit depends on idling time avoided."
+          ],
+          "methodology": "Anti-idling is a standard practical measure (also part of the community bulletin). No fabricated percentage is attached.",
+          "source": {
+            "name": "UK DEFRA/BEIS GHG conversion factors 2024 (cold-start/idling methodology notes)",
+            "url": "https://www.gov.uk/government/publications/government-conversion-factors-for-company-reporting"
+          },
+          "relevance": 70,
+          "why": "Idling outside schools and shops burns fuel and emits at kerb height where children breathe; switching off is free.",
+          "impact": {
+            "type": "travel_emissions",
+            "display": "Eliminates idling emissions during waits; no numeric claim without knowing your idling minutes.",
+            "qualitative": "Zero-cost habit change."
+          }
+        },
+        {
+          "id": "emission_metro_bus_shift",
+          "pillar": "emission",
+          "title": "Shift some trips to metro or bus",
+          "instruction": "Move one or two regular trips per week to metro/train or bus where that route exists for you; confirm the local option first.",
+          "costBand": "under_500",
+          "costNote": "Fare depends on your city; the app does not invent routes or fares and asks you to confirm availability.",
+          "effortMinutes": 0,
+          "confidence": "medium",
+          "assumptions": [
+            "Numeric impact only when a trip distance is provided in the profile.",
+            "No route, fare or timetable data is integrated."
+          ],
+          "methodology": "Per-km CO2e estimates use documented public emission factors in lib/impact/emissions.ts; the UI states factors are indicative.",
+          "source": {
+            "name": "UK DEFRA/BEIS GHG conversion factors 2024",
+            "url": "https://www.gov.uk/government/publications/government-conversion-factors-for-company-reporting"
+          },
+          "relevance": 68,
+          "why": "Where a metro/bus route exists for your trip, per-person emissions per km drop substantially versus car. Confirm the local route first; the app does not invent route data.",
+          "impact": {
+            "type": "travel_emissions",
+            "display": "Estimated ~2.19 kg CO2e/day avoided for your 8 km one-way trips (car -> metro or train). Applies to your trip, not to the city's air quality.",
+            "numeric": {
+              "value": 2.19,
+              "unit": "kg CO2e/day",
+              "formula": "distance_km x (baseline 0.1702 - alternative 0.0332 kg CO2e per person-km) x 2 trips",
+              "assumptions": [
+                "Indicative public emission factors, not India-certified measured values.",
+                "Direct tailpipe CO2e only; no upstream fuel/electricity production included.",
+                "Assumes 2 one-way trips per day for this mode shift."
+              ],
+              "source": {
+                "name": "UK DEFRA/BEIS GHG conversion factors 2024 - national rail (used as nearest published proxy for electric urban rail)",
+                "url": "https://www.gov.uk/government/publications/government-conversion-factors-for-company-reporting",
+                "year": 2024
+              }
+            }
+          }
+        }
+      ]
+    },
+    "excluded": [
+      {
+        "actionId": "indoor_ventilate_cleaner_window",
+        "reason": "Outdoor category too poor to recommend opening windows."
+      },
+      {
+        "actionId": "emission_walk_cycle_short",
+        "reason": "Air category is Poor or worse: outdoor exertion is not promoted today, even for zero emissions."
+      },
+      {
+        "actionId": "breathe_mask_outdoors",
+        "reason": "Ranked below the top actions for this pillar today."
+      },
+      {
+        "actionId": "breathe_away_from_road",
+        "reason": "Ranked below the top actions for this pillar today."
+      },
+      {
+        "actionId": "indoor_no_plants_as_filter",
+        "reason": "Ranked below the top actions for this pillar today."
+      },
+      {
+        "actionId": "emission_no_waste_burning",
+        "reason": "Ranked below the top actions for this pillar today."
+      },
+      {
+        "actionId": "emission_trip_chain",
+        "reason": "Ranked below the top actions for this pillar today."
+      },
+      {
+        "actionId": "emission_stagger_trip_time",
+        "reason": "Ranked below the top actions for this pillar today."
+      },
+      {
+        "actionId": "emission_remote_day",
+        "reason": "Ranked below the top actions for this pillar today."
+      }
+    ],
+    "betterWindow": {
+      "found": true,
+      "startIso": "2026-11-28T14:00",
+      "endIso": "2026-11-28T15:00",
+      "windowMeanPm25": 89.4,
+      "comparisonMeanPm25": 224.7,
+      "improvementPercent": 60,
+      "note": "Potentially better window for outdoor activity, based on the same PM2.5 forecast series. A lower forecast is not a guarantee of safe air; conditions can vary by street and indoors."
+    }
+  },
+  "ai": {
+    "status": "ok",
+    "model": "gemini-3.5-flash-lite",
+    "explanation": "Walking and cycling were excluded because the air quality in Delhi is in the Very Poor category, with a model-derived indicative estimate value of 355 and PM2.5 at 186.3 micrograms per cubic meter. Exercising outdoors during high pollution can increase pollutant inhalation, so the plan prioritizes keeping sensitive members indoors and shifting outdoor tasks. Your approved actions help reduce household exposure and emissions within your budget constraints without prescribing medical advice.",
+    "actionNotes": [
+      {
+        "actionId": "breathe_shift_outdoor_window",
+        "note": "Move outdoor time to the cleaner window between 14:00 and 15:00 when the mean PM2.5 drops."
+      },
+      {
+        "actionId": "breathe_sensitive_indoor_play",
+        "note": "Keep sensitive members' activity indoors today to limit high-pollution exposure."
+      },
+      {
+        "actionId": "breathe_keep_windows_closed_peak",
+        "note": "Keep windows shut during peak hours to reduce infiltration."
+      },
+      {
+        "actionId": "indoor_no_smoke_sources",
+        "note": "Stop indoor smoke sources like incense to protect indoor air."
+      }
+    ],
+    "disclaimer": "AI explanation generated by gemini-3.5-flash-lite. It is prose only - every number, action and calculation on this page comes from the deterministic engine, not from the AI."
+  }
+}

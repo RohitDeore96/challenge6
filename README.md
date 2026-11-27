@@ -8,22 +8,22 @@ HawaSathi (Hindi: हवा = air, साथी = companion) helps families and 
 
 **The rules calculate. Gemini explains. The user decides.**
 
-**[Open the live app](#deploy-on-vercel)** · [Evaluator quick start](docs/DEMO.md) · [Evidence index](docs/EVIDENCE_INDEX.md) · [Live verification](docs/LIVE_VERIFICATION.md)
+**[Open the live app](https://challenge6-phi.vercel.app/)** · [Evaluator quick start](#evaluator-quick-start) · [Full demo script](docs/DEMO.md) · [Evidence index](docs/EVIDENCE_INDEX.md)
 
-Built for **PromptWars Challenge 6 — Urban Air Quality Assistant** · Next.js 16 · TypeScript · Tailwind CSS 4 · shadcn/ui · Zod · Vitest · AI: `gemini-3.5-flash-lite` (server-side only) · MIT licence
+Built for **PromptWars Challenge 6 — Urban Air Quality Assistant** · Next.js 16 · TypeScript (strict) · Tailwind CSS 4 · shadcn/ui · Zod · Vitest · AI: `gemini-3.5-flash-lite` (server-side only) · MIT licence
 
 [![CI](https://github.com/RohitDeore96/challenge6/actions/workflows/ci.yml/badge.svg)](https://github.com/RohitDeore96/challenge6/actions)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-> **Recorded verification, 2026-11-27 (UTC)** (see [docs/METRICS.md](docs/METRICS.md) and [worklog.md](worklog.md)). These are the results of one recorded run on that date, not a live status: lint, typecheck and the production build clean · **93 unit/integration tests passed across 7 files** · live provider data served end-to-end (Delhi US AQI 220 → indicative India AQI estimate 355 "Very Poor"; Mumbai 189 → 184) · the no-key AI fallback verified end-to-end and in the real UI · zero fabricated readings at any point, including during a real provider-outage window ([live verification](docs/LIVE_VERIFICATION.md)).
+> **Recorded verification, 2026-11-27 (UTC)** (see [docs/LIVE_VERIFICATION.md](docs/LIVE_VERIFICATION.md), [docs/METRICS.md](docs/METRICS.md) and [worklog.md](worklog.md)). These are the results of one recorded run on that date, not a live status: lint, typecheck and the production build clean · **93 unit/integration tests passed across 7 files** · live provider data served end-to-end **on the deployed Vercel site** (Delhi US AQI 220 → indicative India AQI estimate 355 "Very Poor"; Mumbai US AQI 189 → 184 "Moderately polluted") · **two real `gemini-3.5-flash-lite` answers captured from the deployed site** with schema-validated, source-labelled output · the no-key AI fallback verified end-to-end and in the real UI · zero fabricated readings at any point.
 
 <p align="center">
-  <img src="docs/screenshots/desktop-air.png" alt="Live air-quality summary for Delhi: provenance labels, US AQI and the separate model-derived indicative India AQI estimate, freshness and caveats, with the hourly pollutant trend" width="49%" />
-  <img src="docs/screenshots/desktop-plan.png" alt="The full daily plan: three action pillars with cost, effort, why each action is suggested today, and a per-action impact breakdown" width="49%" />
+  <img src="docs/screenshots/desktop-air.png" alt="Live Delhi air summary on the deployed site: provenance line, hero model-derived India AQI estimate 355 Very Poor with a category-coloured 0-500 gauge, PM2.5, PM10 and the separate US AQI card" width="49%" />
+  <img src="docs/screenshots/desktop-ai-answer.png" alt="The Ask-about-your-plan panel on the deployed site: a real gemini-3.5-flash-lite answer, labelled with the model, with per-action notes and the AI-explains-only disclaimer" width="49%" />
 </p>
 
-**Jump to:** [The problem](#the-problem) · [What it does](#what-it-does-mapped-to-the-challenge-brief) · [Data honesty](#data-honesty--the-design-centre) · [How the AI is used](#how-the-ai-is-used-and-not-used) · [How to verify it](#how-to-verify-hawasathi) · [Evaluator quick start](docs/DEMO.md) · [Screenshots](#screenshots) · [Architecture](#architecture) · [Quality gates](#quality-gates) · [Privacy and safety](#privacy-safety-non-medical-note) · [Run locally](#setup) · [Deploy on Vercel](#deploy-on-vercel) · [Limitations](#limitations-honest-list) · [Licences](#third-party-licences-and-attribution)
+**Jump to:** [The problem](#the-problem) · [What it does](#what-it-does-mapped-to-the-challenge-brief) · [Data honesty](#data-honesty--the-design-centre) · [How the AI is used](#how-the-ai-is-used-and-not-used) · [Evaluator quick start](#evaluator-quick-start) · [How to verify it](#how-to-verify-hawasathi) · [Screenshots](#screenshots) · [Architecture](#architecture) · [Quality gates](#quality-gates) · [Privacy and safety](#privacy-safety-non-medical-note) · [Run locally](#setup) · [Deploy on Vercel](#deploy-on-vercel) · [Limitations](#limitations-honest-list) · [Licences](#third-party-licences-and-attribution)
 
 ## The problem
 
@@ -48,36 +48,50 @@ Core flow: **choose location → load air data → describe household → genera
 ## Data honesty — the design centre
 
 - **Provider:** [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api) (CAMS model). Presented as **modelled area-level forecast**, never as a CPCB station reading.
-- **Two index systems, never mixed:** Open-Meteo's **US AQI** is labelled "US AQI"; the India-side index is labelled **"model-derived indicative India AQI estimate"** (CPCB breakpoints applied to model data — **not** an official CPCB AQI). See `src/lib/aqi/cpcb.ts` and [docs/DATA_METHODOLOGY.md](docs/DATA_METHODOLOGY.md).
-- **Failures stay honest:** provider timeout, malformed data and stale timestamps produce explicit unavailable/stale states. No fake "live" readings, ever. A real outage window is committed as evidence: [docs/evidence/07-honest-unavailable-state.json](docs/evidence/07-honest-unavailable-state.json).
+- **Two index systems, never mixed:** Open-Meteo's **US AQI** is labelled "US AQI"; the India-side index is labelled **"model-derived indicative India AQI estimate"** (CPCB breakpoints applied to model data — **not** an official CPCB AQI) and shown with a 0-500 category-coloured gauge. See `src/lib/aqi/cpcb.ts` and [docs/DATA_METHODOLOGY.md](docs/DATA_METHODOLOGY.md).
+- **Failures stay honest:** provider timeout, malformed data and stale timestamps produce explicit unavailable/stale states. No fake "live" readings, ever. The no-key AI fallback is committed as evidence: [docs/evidence/08-honest-fallback-no-key.json](docs/evidence/08-honest-fallback-no-key.json).
 - **No invented numbers:** travel emission estimates appear only when a trip distance and a sourced factor exist; otherwise the card says so. Indoor benefits are described qualitatively — no fabricated percentage claims.
 
 ## How the AI is used (and not used)
 
 - Model: **`gemini-3.5-flash-lite`**, called **server-side only** from an API route with the key in `GEMINI_API_KEY` (never `NEXT_PUBLIC_`, never in the browser bundle).
 - **Gemini explains; it never calculates.** AQI derivation, safety gates, action selection and impact numbers are deterministic and unit-tested. The AI receives the approved action list + timestamped data and returns prose that is schema-validated (action IDs verified, URLs/HTML rejected, length-bounded) before rendering.
-- **Fully functional without the AI:** no key, a 429, a timeout or malformed output → the plan stays and the UI shows an honest "AI explanation unavailable" state. Prompt design: [docs/PROMPT_DESIGN.md](docs/PROMPT_DESIGN.md); evaluation and the plainly-stated live-model status: [docs/AI_EVALUATION.md](docs/AI_EVALUATION.md).
+- **Verified against the real model on the deployed site (2026-11-27):** two live questions captured with verbatim schema-validated answers — [docs/evidence/06-deployed-ai-answer-exclusion.json](docs/evidence/06-deployed-ai-answer-exclusion.json) and [07-deployed-ai-answer-child.json](docs/evidence/07-deployed-ai-answer-child.json), plus a screenshot of the answer in the real UI ([docs/screenshots/desktop-ai-answer.png](docs/screenshots/desktop-ai-answer.png)). Evaluation and design: [docs/AI_EVALUATION.md](docs/AI_EVALUATION.md), [docs/PROMPT_DESIGN.md](docs/PROMPT_DESIGN.md).
+- **Fully functional without the AI:** no key, a 429, a timeout or malformed output → the plan stays and the UI shows an honest "AI explanation unavailable" state ([docs/evidence/08-honest-fallback-no-key.json](docs/evidence/08-honest-fallback-no-key.json), [docs/screenshots/desktop-ai-fallback.png](docs/screenshots/desktop-ai-fallback.png)).
+
+## Evaluator quick start
+
+No API key is needed to explore the product. Open the **[live app](https://challenge6-phi.vercel.app/)** and follow these steps; [docs/DEMO.md](docs/DEMO.md) has the full scripted walkthrough.
+
+1. **Pick an area.** Search "Delhi" and select it — provenance-labelled modelled data loads for that grid cell (US AQI and the separate model-derived indicative India AQI estimate with a colour gauge).
+2. **Describe your household.** Car commute, 8 km one-way, "Incense / dhoop" indoor source, a more-sensitive member at home, budget under ₹500 — then press **Generate today's plan**.
+3. **Read the three pillars.** Breathe safer today · Cleaner indoor air · Lower-emission routine. Each card says why it fits today, what impact to expect, and how the number was derived.
+4. **Mark what works.** Press **Using this action** or **Not practical for us** on any card — the plan re-runs deterministically and the impact updates.
+5. **Ask the AI why.** In *Ask about your plan*, try "Why were walking and cycling excluded from my commute alternatives today?" — the reply is labelled `gemini-3.5-flash-lite · server-side call` and only explains; every number stays from the engine.
+6. **Share a bulletin.** Copy the community bulletin — locality-level, provenance included, no household details.
+
+**What needs a key and what does not.** The AI panel calls the hosted model only when the deployment has a server-side `GEMINI_API_KEY`. Without one, the plan stays fully functional and the panel answers with an honest "AI explanation unavailable" state ([evidence](docs/evidence/08-honest-fallback-no-key.json)). Air data, the plan, impact maths and the bulletin never depend on AI.
 
 ## How to verify HawaSathi
 
 | Question | Where the answer is |
 |---|---|
 | Does it match the challenge brief? | [docs/SPEC.md](docs/SPEC.md) — R1–R12 with implementation and evidence |
-| Was the data path verified against the live provider? | [docs/LIVE_VERIFICATION.md](docs/LIVE_VERIFICATION.md) — verbatim captured responses, exact commands, timestamps |
-| Do the quality gates pass? | [docs/METRICS.md](docs/METRICS.md) and [worklog.md](worklog.md) — recorded run results, including the defects the run caught and fixed |
-| How is the AI layer evaluated? | [docs/AI_EVALUATION.md](docs/AI_EVALUATION.md) |
+| Was the data path verified against the live provider **on the deployed site**? | [docs/LIVE_VERIFICATION.md](docs/LIVE_VERIFICATION.md) — verbatim captured responses, exact commands, timestamps |
+| Was the AI verified against the real model? | [docs/AI_EVALUATION.md](docs/AI_EVALUATION.md) + deployed-site captures ([06](docs/evidence/06-deployed-ai-answer-exclusion.json), [07](docs/evidence/07-deployed-ai-answer-child.json)) |
+| Do the quality gates pass? | [docs/METRICS.md](docs/METRICS.md) and [worklog.md](worklog.md) — recorded run results, including the defects the runs caught and fixed |
 | Is it accessible? | [docs/ACCESSIBILITY_REPORT.md](docs/ACCESSIBILITY_REPORT.md) — implemented measures, what was exercised, honest gaps |
 | Where is everything? | [docs/EVIDENCE_INDEX.md](docs/EVIDENCE_INDEX.md) — recommended reading order |
-| What are the remaining risks? | [docs/SECURITY.md](SECURITY.md) residual risks + [Limitations](#limitations-honest-list) |
+| What are the remaining risks? | [SECURITY.md](SECURITY.md) residual risks + [Limitations](#limitations-honest-list) |
 
 ## Screenshots
 
-All captures are from the real running application (production build, live provider data, scripted household profile; AI panel in its designed no-key fallback state). See `docs/screenshots/` and the [evidence index](docs/EVIDENCE_INDEX.md).
+All captures are from the **real deployed application** at [challenge6-phi.vercel.app](https://challenge6-phi.vercel.app/) (production build, live provider data, scripted household profile; the AI answer is a real model response, the fallback state was captured from the same code without a key). See `docs/screenshots/` and the [evidence index](docs/EVIDENCE_INDEX.md).
 
 | | |
 |---|---|
-| ![Landing](docs/screenshots/desktop-landing.png) | ![Mumbai air](docs/screenshots/desktop-air-mumbai.png) |
-| ![AI fallback](docs/screenshots/desktop-ai-fallback.png) | ![Mobile 390px](docs/screenshots/mobile-390-plan.png) |
+| ![Landing](docs/screenshots/desktop-landing.png) | ![AI fallback](docs/screenshots/desktop-ai-fallback.png) |
+| ![Plan](docs/screenshots/desktop-plan.png) | ![Mobile 390px](docs/screenshots/mobile-390-plan.png) |
 
 ## Architecture
 
@@ -85,11 +99,11 @@ All captures are from the real running application (production build, live provi
 src/
 ├── app/
 │   ├── page.tsx                  # client entry (dynamic import, ssr:false)
-│   ├── layout.tsx                # metadata, logo-derived icons, og image
+│   ├── layout.tsx                # metadata, metadataBase, logo-derived icons, og image
 │   └── api/
 │       ├── air-quality/route.ts  # GET provider proxy (cache + rate limit)
 │       └── assistant/route.ts    # POST plan + optional AI explanation
-├── components/                   # UI sections (LocationPicker, plan/*, ...)
+├── components/                   # UI sections (StepHeading, LocationPicker, plan/*, ...)
 ├── hooks/use-toast.ts            # shadcn toast hook
 ├── lib/
 │   ├── providers/openMeteo.ts    # provider adapter, staleness, caveats
@@ -128,19 +142,21 @@ Without a key the app runs fully: deterministic plans, honest "AI unavailable" l
 ```bash
 bun run lint       # eslint
 bun run typecheck  # tsc --noEmit
-bun test           # vitest (93 tests: AQI, planner, window, impact, AI validation, provider, API)
+bun run test       # vitest (93 tests: AQI, planner, window, impact, AI validation, provider, API)
 bun run build      # production build (type errors fail the build)
 ```
 
-CI runs all four on every push/PR (`.github/workflows/ci.yml`). The gates' recorded results, and the defects a full verification run caught (missing `@types/node` that broke the Vercel build, a distance-input step bug that silently blocked valid values, dead scaffold code), are documented in [worklog.md](worklog.md).
+CI runs all four on every push/PR (`.github/workflows/ci.yml`). The gates' recorded results, and the defects full verification runs caught (missing `@types/node` that broke the Vercel build, a distance-input step bug, dead scaffold code), are documented in [worklog.md](worklog.md).
 
 ## Deploy on Vercel
 
-1. Push the repository to GitHub (this repo).
+1. Push the repository to GitHub (this repo). Every push to `main` redeploys production automatically.
 2. In Vercel: **Add New → Project → Import** `RohitDeore96/challenge6`. Framework preset: **Next.js** (auto-detected). No build overrides needed.
 3. Project Settings → Environment Variables → add `GEMINI_API_KEY` (Production + Preview), value from [Google AI Studio](https://aistudio.google.com/apikey).
-4. Deploy. Every push to `main` redeploys production; PRs get preview deployments. Security headers come from `vercel.json`.
+4. Deploy. PRs get preview deployments. Security headers come from `vercel.json`.
 5. Verify: production URL loads in incognito, `/api/air-quality?lat=28.61&lon=77.21&label=Delhi` returns live data, the AI panel answers with the model label, and removing the env var shows the honest fallback.
+
+**A note on the console message "A listener indicated an asynchronous response…":** that error comes from a **browser extension** (password managers, ad blockers and similar extensions use `chrome.runtime` messaging); it is not produced by HawaSathi, which uses no extension APIs. Open the site in incognito with extensions disabled and the console stays clean — this is documented in [docs/LIVE_VERIFICATION.md](docs/LIVE_VERIFICATION.md).
 
 ## Privacy, safety, non-medical note
 
@@ -155,8 +171,7 @@ CI runs all four on every push/PR (`.github/workflows/ci.yml`). The gates' recor
 - Emission factors are published UK DEFRA/BEIS 2024 defaults — indicative, not India-certified (documented in [docs/IMPACT_METHODOLOGY.md](docs/IMPACT_METHODOLOGY.md)).
 - No route/fare/transit data is integrated; the app asks users to confirm local availability rather than inventing it.
 - In-memory cache and rate limits are per-serverless-instance and best-effort.
-- Playwright E2E journeys are not yet automated in CI; the verification journey was executed by script against the production build (see [docs/LIVE_VERIFICATION.md](docs/LIVE_VERIFICATION.md)) and the same logic is covered by unit/integration suites (tracked in the development log and worklog).
-- The live Gemini smoke run is pending the maintainer's API key; the no-key contract is fully verified ([docs/AI_EVALUATION.md](docs/AI_EVALUATION.md)).
+- Playwright E2E journeys are not yet automated in CI; the verification journey was executed by scripted browser against the deployed production site (see [docs/LIVE_VERIFICATION.md](docs/LIVE_VERIFICATION.md)) and the same logic is covered by unit/integration suites (tracked in the development log and worklog).
 
 ## Third-party licences and attribution
 
