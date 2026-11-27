@@ -45,7 +45,9 @@ curl -s "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=28.6139&
 curl -s "https://challenge6-phi.vercel.app/api/air-quality?lat=28.61&lon=77.21&label=Delhi%20(Delhi)" \
   > docs/evidence/03-deployed-air-delhi.json
 
-# 3. deployed assistant (plan, no question -> no AI call)
+# 3. deployed assistant (plan, no question)
+#    captured on the pre-v2 build, where a plain plan made no AI call; on the
+#    current build the same request also returns the AI briefing (evidence 11)
 curl -s -X POST "https://challenge6-phi.vercel.app/api/assistant" \
   -H "Content-Type: application/json" \
   -d '{"location":{"lat":28.61,"lon":77.21,"label":"Delhi (Delhi)"},"profile":{"routine":"mixed","commuteMode":"car","oneWayDistanceKm":8,"budget":"under_500","cookingFuel":"lpg","indoorSources":["incense"],"hasPurifier":"no","sensitiveMember":"yes","scheduleFlexibility":"somewhat"}}' \

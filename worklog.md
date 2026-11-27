@@ -196,3 +196,36 @@ data only for Pune"). Root causes found in code:
 | `bun run lint` / `typecheck` / `test` / `build` | exit 0 / exit 0 / 102 passed / clean build |
 | 6× `curl` deployed `/api/assistant` (evidence captures) | all `ai.status: "ok"`, model `gemini-3.5-flash-lite` |
 | Credential scan | the temporary key was never committed; no `AQ.` / `ghp_` patterns in the tree |
+
+## 2026-11-27 — Session 5: freshness audit (India AQI estimate + docs/repo check)
+
+### A. Why
+
+Maintainer asked to verify that the India AQI estimate (x/500, category,
+"model-derived") really works, and to check that every repo artefact (docs,
+README, evidence) is up to date with the code.
+
+### B. India AQI estimate — verified live on the deployed site
+
+| Check | Result |
+| --- | --- |
+| Default plan (Pune, no question) | `air.derivedIndiaAqi`: value **77**, "Satisfactory", labelled "model-derived indicative India AQI estimate"; sub-indices PM2.5 51, PM10 31, NO2 28, SO2 15, CO 29, O3 77 (worst pollutant defines the index, NH3 excluded for insufficient window coverage) — the 77 is the live CAMS-derived value, not a stored number |
+| "what is the aqi in mumbai right now?" | `queriedLocations: [Mumbai ok]`; answer quotes Mumbai's own estimate **184 "Moderately polluted"** (US AQI 164) |
+| "what is warje aqi in pune?" | `queriedLocations: [Pune home, Warje ok]`; answer quotes Warje's own grid estimate **77 "Satisfactory"** (US AQI 128) |
+
+Conclusion: the estimate is recomputed per location from live CAMS hourly
+series with CPCB breakpoints and ≥75% window coverage; the UI card, the
+`ai.model` metadata and the AI prose all agree on the same numbers.
+
+### C. Repo freshness audit — findings and fixes
+
+| Check | Result |
+| --- | --- |
+| `bun run lint` / `typecheck` / `test` / `build` | exit 0 / exit 0 / **102 passed across 8 files** (matches README, METRICS, worklog) / clean build |
+| GitHub Actions CI | badge fetched from GitHub: **"CI - passing"** (workflow triggers correctly on `main`) |
+| README | current: per-question live-data flow, India AQI estimate, `AI_MODEL` env var, 102-test gate, deploy steps — all match the code |
+| docs/ (13 files) + worklog.md | current; one stale comment found and fixed: LIVE_VERIFICATION's evidence-05 command still said "no question -> no AI call" (true for the pre-v2 capture only); now states the current always-briefing behaviour and points to evidence 11 |
+| `.env.example` | documented `GEMINI_API_KEY` only; added the optional `AI_MODEL` line so it matches the README setup block |
+| Stale-marker scan (`TODO`, `FIXME`, old model IDs, old test counts) | no live references; the `93 tests` figures appear only as dated historical run records in worklog/DEVELOPMENT_LOG |
+| Evidence set | 12 captures + 7 screenshots present, timestamps consistent with the v2-pipeline refresh; EVIDENCE_INDEX reading order matches the files on disk |
+
