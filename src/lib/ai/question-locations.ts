@@ -28,12 +28,12 @@ const TIMEOUT_MS = 6_000;
 const MAX_LOCATIONS = 2;
 const MAX_GEOCODE_ATTEMPTS = 2;
 /**
- * Two points closer than this (~5-6 km in India) are treated as the same
- * grid cell for dedupe/home purposes. Kept tight on purpose: a named
- * neighbourhood such as Warje still gets its own live fetch, while
- * "Delhi" vs "New Delhi" collapses to one fetch.
+ * Two points closer than this (~2 km in India) are treated as the same
+ * grid cell for dedupe/home purposes. Deliberately tight: a named
+ * neighbourhood such as Warje (~6 km from Pune centre) still gets its own
+ * live fetch, while "Delhi" vs "New Delhi" (~1 km apart) collapses to one.
  */
-const SAME_PLACE_DEGREES = 0.05;
+const SAME_PLACE_DEGREES = 0.02;
 
 /** Words that are almost never a place name in this app's context. */
 const STOPWORDS = new Set([
@@ -245,8 +245,8 @@ async function geocodeInIndia(
         label: admin1 && !name.toLowerCase().includes(admin1.toLowerCase())
           ? `${name}, ${admin1}`
           : name,
-        lat: Math.round(lat * 100) / 100,
-        lon: Math.round(lon * 100) / 100,
+        lat: Math.round(lat * 1000) / 1000,
+        lon: Math.round(lon * 1000) / 1000,
       };
     }
     return null;
@@ -320,8 +320,8 @@ async function geocodeNeighbourhood(
         : name;
       return {
         label: label.slice(0, 100),
-        lat: Math.round(lat * 100) / 100,
-        lon: Math.round(lon * 100) / 100,
+        lat: Math.round(lat * 1000) / 1000,
+        lon: Math.round(lon * 1000) / 1000,
       };
     }
     return null;

@@ -80,8 +80,8 @@ describe("question location resolution", () => {
       },
       {
         label: "Warje, Maharashtra",
-        lat: 18.46,
-        lon: 73.79,
+        lat: 18.463,
+        lon: 73.795,
         source: "geocoder",
         relation: "other",
       },
@@ -126,7 +126,7 @@ describe("question location resolution", () => {
       },
       {
         label: "Warje, Maharashtra",
-        lat: 18.48,
+        lat: 18.482,
         lon: 73.8,
         source: "geocoder",
         relation: "other",
