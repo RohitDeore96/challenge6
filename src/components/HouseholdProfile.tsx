@@ -7,10 +7,11 @@
  */
 
 import { useState } from "react";
-import { UserRound } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { StepHeading } from "@/components/StepHeading";
 import {
   Select,
   SelectContent,
@@ -175,11 +176,9 @@ export function HouseholdProfile({
   return (
     <section
       aria-labelledby="profile-heading"
-      className="rounded-xl border bg-card p-4 sm:p-6"
+      className="card-shadow rounded-2xl border bg-card p-4 sm:p-6"
     >
-      <h2 id="profile-heading" className="text-lg font-semibold">
-        3. Tell us about your household
-      </h2>
+      <StepHeading step={3} title="Tell us about your household" />
       <p className="mt-1 text-sm text-muted-foreground">
         Only fields that change your recommendations. Nothing here is sent to
         an account or server database - it stays in this session and your
@@ -274,8 +273,8 @@ export function HouseholdProfile({
                   onClick={() => toggleSource(o.value)}
                   className={`min-h-11 rounded-full border px-4 text-sm transition-colors ${
                     active
-                      ? "border-emerald-700 bg-emerald-50 font-medium text-emerald-800"
-                      : "bg-background hover:bg-accent"
+                      ? "border-emerald-700 bg-emerald-100 font-medium text-emerald-900 ring-1 ring-emerald-700/40"
+                      : "bg-background hover:border-emerald-600/40 hover:bg-emerald-50/60"
                   }`}
                 >
                   {o.label}
@@ -369,11 +368,12 @@ export function HouseholdProfile({
         <div className="flex flex-wrap items-center gap-3">
           <Button
             type="submit"
-            className="h-11 px-6"
+            size="lg"
+            className="h-12 bg-gradient-to-r from-emerald-700 to-teal-700 px-7 text-white shadow-md hover:from-emerald-800 hover:to-teal-800"
             disabled={loading}
             aria-busy={loading}
           >
-            <UserRound aria-hidden="true" className="mr-2 h-4 w-4" />
+            <Sparkles aria-hidden="true" className="mr-2 h-4 w-4" />
             {loading
               ? "Building plan…"
               : hasPlan

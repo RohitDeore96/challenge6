@@ -14,6 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Production URL keeps OG/Twitter image resolution correct on Vercel;
+  // falls back to localhost in local development builds.
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://challenge6-phi.vercel.app"
+  ),
   title: "HawaSathi - Urban Air Quality Assistant",
   description:
     "Air-aware daily action plans for Indian families and communities: modelled air data with honest provenance, low-emission routines, indoor air actions and explainable impact estimates. AI explanations via server-side gemini-3.5-flash-lite.",

@@ -32,7 +32,7 @@ export function ActionCard({ action, verdict, onVerdictChange }: Props) {
   const [whyOpen, setWhyOpen] = useState(false);
 
   return (
-    <article className="rounded-lg border bg-card p-4">
+    <article className="rounded-xl border bg-card p-4 transition-shadow hover:shadow-md">
       <div className="flex items-start justify-between gap-2">
         <h4 className="text-base font-semibold leading-snug">{action.title}</h4>
         <span

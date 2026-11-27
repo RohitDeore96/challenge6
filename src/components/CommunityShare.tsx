@@ -9,8 +9,9 @@
  */
 
 import { useState } from "react";
-import { Check, Copy, Users } from "lucide-react";
+import { Check, Copy, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StepHeading } from "@/components/StepHeading";
 import { formatDateTime } from "@/lib/format";
 import type { AirQualityResponse, CommunityBulletin } from "@/lib/schemas";
 
@@ -86,11 +87,9 @@ export function CommunityShare({ air, disabled }: Props) {
   return (
     <section
       aria-labelledby="community-heading"
-      className="rounded-xl border bg-card p-4 sm:p-6"
+      className="card-shadow rounded-2xl border bg-card p-4 sm:p-6"
     >
-      <h2 id="community-heading" className="text-lg font-semibold">
-        6. Community bulletin
-      </h2>
+      <StepHeading step={6} title="Community bulletin" />
       <p className="mt-1 text-sm text-muted-foreground">
         A shareable locality-level summary with clear data provenance and
         three community actions. Copy it and share it yourself - the app never
@@ -99,12 +98,13 @@ export function CommunityShare({ air, disabled }: Props) {
       </p>
 
       {!air || disabled ? (
-        <p className="mt-3 text-sm text-muted-foreground">
+        <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+          <Megaphone aria-hidden="true" className="h-4 w-4" />
           Load air data for an area first.
         </p>
       ) : bulletin ? (
         <>
-          <pre className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap rounded-lg border bg-muted/30 p-3 font-sans text-sm">
+          <pre className="mt-3 max-h-72 overflow-y-auto whitespace-pre-wrap rounded-xl border bg-muted/30 p-3 font-sans text-sm">
             {bulletinToText(bulletin)}
           </pre>
           <Button

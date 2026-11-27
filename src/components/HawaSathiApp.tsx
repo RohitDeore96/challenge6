@@ -189,7 +189,7 @@ export function HawaSathiApp() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900">
+    <div className="page-shell flex min-h-screen flex-col text-stone-900">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-emerald-700 focus:px-3 focus:py-2 focus:text-white"
@@ -197,28 +197,53 @@ export function HawaSathiApp() {
         Skip to main content
       </a>
 
-      {/* Header */}
-      <header className="border-b bg-background/95">
-        <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-4 sm:px-6">
-          <Image
-            src="/logo-mark.png"
-            alt="HawaSathi logo"
-            width={44}
-            height={44}
-            priority
-            className="h-11 w-11 shrink-0"
-          />
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold leading-tight">HawaSathi</h1>
-            <p className="text-sm text-muted-foreground">
-              Know what the air is like, what your household can do today,
-              why it matters, and what impact to expect.
-            </p>
+      {/* Hero header */}
+      <header className="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-800 text-white">
+        <div aria-hidden="true" className="hero-grid absolute inset-0" />
+        <div className="relative mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10">
+          <div className="flex items-center gap-4">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/95 p-1 shadow-lg ring-1 ring-white/40">
+              <Image
+                src="/logo-mark.png"
+                alt="HawaSathi logo"
+                width={52}
+                height={52}
+                priority
+                className="h-12 w-12"
+              />
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
+                HawaSathi{" "}
+                <span aria-hidden="true" className="text-base font-medium text-emerald-200/90 sm:text-lg">
+                  · हवासाथी
+                </span>
+              </h1>
+              <p className="mt-1 max-w-xl text-sm leading-relaxed text-emerald-50/90 sm:text-base">
+                Know what the air is like, what your household can do today,
+                why it matters, and what impact to expect.
+              </p>
+            </div>
           </div>
+          <ul
+            aria-label="How HawaSathi works"
+            className="mt-5 flex flex-wrap gap-2 text-xs font-medium sm:text-sm"
+          >
+            {["Modelled air data", "Deterministic plan", "AI explains, never invents", "No sign-up, no tracking"].map(
+              (item) => (
+                <li
+                  key={item}
+                  className="rounded-full border border-white/25 bg-white/10 px-3 py-1 backdrop-blur-sm"
+                >
+                  {item}
+                </li>
+              ),
+            )}
+          </ul>
         </div>
       </header>
 
-      <main id="main" className="mx-auto max-w-3xl space-y-5 px-4 py-6 sm:px-6">
+      <main id="main" className="mx-auto w-full max-w-4xl flex-1 space-y-5 px-4 py-6 sm:px-6 sm:py-8">
         {pageError ? (
           <div
             role="alert"
@@ -262,34 +287,40 @@ export function HawaSathiApp() {
         <CommunityShare air={air} disabled={profile === null} />
       </main>
 
-      <footer className="mt-auto border-t bg-background">
-        <div className="mx-auto max-w-3xl space-y-2 px-4 py-6 text-xs text-muted-foreground sm:px-6">
-          <p>
-            <strong>Data:</strong> Open-Meteo Air Quality API (CAMS model
-            forecast) - modelled area-level data, not official CPCB station
-            readings. Indicative India AQI values are model-derived estimates
-            using CPCB category logic and are never mixed with the US AQI.
-          </p>
-          <p>
-            <strong>AI:</strong> gemini-3.5-flash-lite, called server-side
-            only, generates explanations for the deterministic plan - it never
-            calculates values or invents actions.
-          </p>
-          <p>
-            <strong>Not medical advice:</strong> HawaSathi gives general
-            public-health information. It does not diagnose conditions or
-            replace guidance from doctors or local authorities.
-          </p>
-          <p>
-            <strong>Privacy:</strong> no account, no address, no personal
-            data collected. Profile choices stay in your browser.{" "}
-            <a
-              className="underline underline-offset-2"
-              href="/api/air-quality?lat=28.61&lon=77.21&label=Delhi"
-            >
-              Public API example
-            </a>
-          </p>
+      <footer className="border-t bg-background/80 backdrop-blur-sm">
+        <div className="mx-auto grid max-w-4xl gap-6 px-4 py-8 text-xs text-muted-foreground sm:grid-cols-2 sm:px-6">
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Data &amp; AI honesty</p>
+            <p>
+              <strong>Data:</strong> Open-Meteo Air Quality API (CAMS model
+              forecast) - modelled area-level data, not official CPCB station
+              readings. Indicative India AQI values are model-derived estimates
+              using CPCB category logic and are never mixed with the US AQI.
+            </p>
+            <p>
+              <strong>AI:</strong> gemini-3.5-flash-lite, called server-side
+              only, generates explanations for the deterministic plan - it never
+              calculates values or invents actions.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-foreground">Privacy &amp; scope</p>
+            <p>
+              <strong>Not medical advice:</strong> HawaSathi gives general
+              public-health information. It does not diagnose conditions or
+              replace guidance from doctors or local authorities.
+            </p>
+            <p>
+              <strong>Privacy:</strong> no account, no address, no personal
+              data collected. Profile choices stay in your browser.{" "}
+              <a
+                className="font-medium text-emerald-800 underline underline-offset-2"
+                href="/api/air-quality?lat=28.61&lon=77.21&label=Delhi"
+              >
+                Public API example
+              </a>
+            </p>
+          </div>
         </div>
       </footer>
     </div>

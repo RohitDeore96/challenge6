@@ -12,6 +12,7 @@ import { useMemo, useState } from "react";
 import { MapPin, Navigation, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { StepHeading } from "@/components/StepHeading";
 import { searchCities } from "@/lib/data/cities";
 import type { LocationInput } from "@/lib/schemas";
 
@@ -63,19 +64,20 @@ export function LocationPicker({ selected, onSelect, disabled }: Props) {
   return (
     <section
       aria-labelledby="location-heading"
-      className="rounded-xl border bg-card p-4 sm:p-6"
+      className="card-shadow rounded-2xl border bg-card p-4 sm:p-6"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="location-heading" className="text-lg font-semibold">
-          1. Choose your area
-        </h2>
-        {selected ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-sm font-medium">
-            <MapPin aria-hidden="true" className="h-4 w-4" />
-            {selected.label}
-          </span>
-        ) : null}
-      </div>
+      <StepHeading
+        step={1}
+        title="Choose your area"
+        aside={
+          selected ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-900 ring-1 ring-emerald-600/30">
+              <MapPin aria-hidden="true" className="h-4 w-4 text-emerald-700" />
+              {selected.label}
+            </span>
+          ) : undefined
+        }
+      />
       <p className="mt-1 text-sm text-muted-foreground">
         Manual city selection always works. &quot;Use my location&quot; is
         optional and needs your browser permission.
@@ -115,13 +117,13 @@ export function LocationPicker({ selected, onSelect, disabled }: Props) {
       {results.length > 0 && query.length > 0 ? (
         <ul
           id={CITY_LIST_ID}
-          className="mt-3 max-h-56 overflow-y-auto rounded-lg border"
+          className="mt-3 max-h-56 overflow-y-auto rounded-xl border shadow-sm"
         >
           {results.map((city) => (
-            <li key={`${city.name}-${city.lat}`}>
+            <li key={`${city.name}-${city.lat}`} className="border-b last:border-0">
               <button
                 type="button"
-                className="flex min-h-11 w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                className="flex min-h-11 w-full items-center justify-between px-4 py-2 text-left text-sm transition-colors hover:bg-emerald-50 focus-visible:bg-emerald-50 focus-visible:outline-none"
                 onClick={() =>
                   selectCity(city.name, city.state, city.lat, city.lon)
                 }

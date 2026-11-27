@@ -5,10 +5,9 @@ import { fileURLToPath } from "node:url";
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
-  // Standalone output keeps local/production containers self-contained.
-  // Vercel detects Next.js automatically and builds with the same config.
-  output: "standalone",
-  // Pin the Turbopack workspace root to this project directory.
+  // Standard output: Vercel detects Next.js automatically and builds with
+  // its own optimised pipeline; `next start` works locally without the
+  // standalone copy step.
   turbopack: {
     root: projectRoot,
   },

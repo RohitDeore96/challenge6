@@ -12,6 +12,7 @@ import { useState } from "react";
 import { Bot, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { StepHeading } from "@/components/StepHeading";
 import type { AiExplanation, AiUnavailable } from "@/lib/schemas";
 
 interface Props {
@@ -42,11 +43,9 @@ export function GeminiPanel({ onAsk, ai, loading, disabled }: Props) {
   return (
     <section
       aria-labelledby="ai-heading"
-      className="rounded-xl border bg-card p-4 sm:p-6"
+      className="card-shadow rounded-2xl border bg-card p-4 sm:p-6"
     >
-      <h2 id="ai-heading" className="text-lg font-semibold">
-        5. Ask about your plan
-      </h2>
+      <StepHeading step={5} title="Ask about your plan" />
       <p className="mt-1 text-sm text-muted-foreground">
         Optional. Answers come from{" "}
         <code className="rounded bg-muted px-1 py-0.5 text-xs">
@@ -73,7 +72,7 @@ export function GeminiPanel({ onAsk, ai, loading, disabled }: Props) {
         <div className="flex flex-wrap items-center gap-3">
           <Button
             type="button"
-            className="h-11 px-6"
+            className="h-11 bg-gradient-to-r from-emerald-700 to-teal-700 px-6 text-white shadow-sm hover:from-emerald-800 hover:to-teal-800"
             onClick={submit}
             disabled={disabled || loading}
             aria-busy={loading}
@@ -97,32 +96,44 @@ export function GeminiPanel({ onAsk, ai, loading, disabled }: Props) {
 
         {ai && !loading ? (
           ai.status === "ok" ? (
-            <div className="mt-2 rounded-lg border bg-muted/30 p-3">
+            <div className="mt-2 rounded-xl border bg-gradient-to-br from-emerald-50/60 to-teal-50/40 p-4 ring-1 ring-emerald-600/20">
               <p className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800">
-                <Bot aria-hidden="true" className="h-4 w-4" />
+                <span
+                  aria-hidden="true"
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-700 text-white"
+                >
+                  <Bot className="h-3.5 w-3.5" />
+                </span>
                 gemini-3.5-flash-lite · server-side call
               </p>
-              <p className="mt-2 whitespace-pre-wrap text-sm">{ai.explanation}</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{ai.explanation}</p>
               {ai.actionNotes.length > 0 ? (
-                <ul className="mt-3 space-y-1.5 text-sm">
+                <ul className="mt-3 space-y-1.5 border-t border-emerald-700/15 pt-3 text-sm">
                   {ai.actionNotes.map((note) => (
-                    <li key={note.actionId}>
-                      <span className="font-medium">
-                        {note.actionId.replace(/_/g, " ")}
+                    <li key={note.actionId} className="flex gap-2">
+                      <span
+                        aria-hidden="true"
+                        className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-700"
+                      />
+                      <span>
+                        <span className="font-medium capitalize">
+                          {note.actionId.replace(/_/g, " ")}
+                        </span>
+                        {": "}
+                        {note.note}
                       </span>
-                      : {note.note}
                     </li>
                   ))}
                 </ul>
               ) : null}
-              <p className="mt-3 border-t pt-2 text-xs text-muted-foreground">
+              <p className="mt-3 border-t border-emerald-700/15 pt-2 text-xs text-muted-foreground">
                 {ai.disclaimer}
               </p>
             </div>
           ) : (
             <div
               role="alert"
-              className="mt-2 rounded-lg border border-amber-600/40 bg-amber-50 p-3"
+              className="mt-2 rounded-xl border border-amber-600/40 bg-amber-50 p-4"
             >
               <p className="text-sm font-semibold text-amber-800">
                 AI explanation unavailable ({ai.reason.replace(/_/g, " ")})

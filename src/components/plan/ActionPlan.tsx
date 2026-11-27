@@ -15,6 +15,7 @@ import { IndoorAirPanel } from "./IndoorAirPanel";
 import { CommuteAlternatives } from "./CommuteAlternatives";
 import { WindowCard } from "./WindowCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StepHeading } from "@/components/StepHeading";
 import type { Plan } from "@/lib/schemas";
 
 interface Props {
@@ -29,12 +30,10 @@ export function ActionPlan({ plan, loading, feedback, onVerdictChange }: Props) 
     return (
       <section
         aria-labelledby="plan-heading"
-        className="rounded-xl border bg-card p-4 sm:p-6"
+        className="card-shadow rounded-2xl border bg-card p-4 sm:p-6"
         aria-busy="true"
       >
-        <h2 id="plan-heading" className="text-lg font-semibold">
-          4. Your plan for today
-        </h2>
+        <StepHeading step={4} title="Your plan for today" />
         <div className="mt-4 space-y-3">
           <Skeleton className="h-6 w-2/3" />
           <Skeleton className="h-24 w-full" />
@@ -55,18 +54,22 @@ export function ActionPlan({ plan, loading, feedback, onVerdictChange }: Props) 
   return (
     <section
       aria-labelledby="plan-heading"
-      className="rounded-xl border bg-card p-4 sm:p-6"
+      className="card-shadow rounded-2xl border bg-card p-4 sm:p-6"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="plan-heading" className="text-lg font-semibold">
-          4. Your plan for today
-        </h2>
-        <p className="text-sm text-muted-foreground" aria-live="polite">
-          {totalUsed > 0
-            ? `${totalUsed} action${totalUsed === 1 ? "" : "s"} marked as used`
-            : "Mark what you will actually do - the plan adapts"}
-        </p>
-      </div>
+      <StepHeading
+        step={4}
+        title="Your plan for today"
+        aside={
+          <p
+            className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-900 ring-1 ring-emerald-600/30 sm:text-sm"
+            aria-live="polite"
+          >
+            {totalUsed > 0
+              ? `${totalUsed} action${totalUsed === 1 ? "" : "s"} marked as used`
+              : "Mark what you will actually do - the plan adapts"}
+          </p>
+        }
+      />
       <p className="mt-1 text-sm text-muted-foreground">
         Built for a <strong>{plan.airSummary.categoryLabel.toLowerCase()}</strong>{" "}
         day from {plan.airSummary.dataSourceType}. Every action card shows why
@@ -80,7 +83,12 @@ export function ActionPlan({ plan, loading, feedback, onVerdictChange }: Props) 
       {/* Pillar 1: Breathe safer today */}
       <div className="mt-6">
         <h3 className="flex items-center gap-2 text-base font-semibold">
-          <Wind aria-hidden="true" className="h-5 w-5 text-teal-700" />
+          <span
+            aria-hidden="true"
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 ring-1 ring-teal-700/25"
+          >
+            <Wind className="h-4.5 w-4.5 text-teal-700" />
+          </span>
           Breathe safer today
         </h3>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -98,7 +106,7 @@ export function ActionPlan({ plan, loading, feedback, onVerdictChange }: Props) 
               />
             ))
           ) : (
-            <p className="rounded-lg bg-muted/40 p-3 text-sm">
+            <p className="rounded-xl bg-muted/40 p-3 text-sm">
               No exposure actions needed from your profile for today&apos;s
               conditions - nothing is forced when the data does not call for
               it.

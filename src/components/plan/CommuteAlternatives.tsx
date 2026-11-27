@@ -25,7 +25,12 @@ export function CommuteAlternatives({
   return (
     <div className="mt-6">
       <h3 className="flex items-center gap-2 text-base font-semibold">
-        <Leaf aria-hidden="true" className="h-5 w-5 text-teal-700" />
+        <span
+          aria-hidden="true"
+          className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 ring-1 ring-teal-700/25"
+        >
+          <Leaf className="h-4.5 w-4.5 text-teal-700" />
+        </span>
         Lower-emission routine
       </h3>
       <p className="mt-1 text-sm text-muted-foreground">

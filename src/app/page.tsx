@@ -16,47 +16,32 @@ const HawaSathiApp = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="min-h-screen bg-stone-50 text-stone-900">
-        <header className="border-b bg-background">
-          <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-4 sm:px-6">
-            <span
-              aria-hidden="true"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-700"
-            >
-              <svg viewBox="0 0 64 64" className="h-5 w-5" fill="none">
-                <path
-                  d="M12 26h20a6 6 0 1 0-6-6"
-                  stroke="#ffffff"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M12 36h26a6 6 0 1 1-6 6"
-                  stroke="#ffffff"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M14 46h14"
-                  stroke="#a7f3d0"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
-            <div>
-              <h1 className="text-xl font-bold leading-tight">HawaSathi</h1>
-              <p className="text-sm text-muted-foreground">
-                Loading your air-aware daily planner…
-              </p>
+      <div className="page-shell min-h-screen text-stone-900">
+        <header className="relative overflow-hidden bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-800 text-white">
+          <div aria-hidden="true" className="hero-grid absolute inset-0" />
+          <div className="relative mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10">
+            <div className="flex items-center gap-4">
+              <span
+                aria-hidden="true"
+                className="flex h-14 w-14 shrink-0 animate-pulse items-center justify-center rounded-2xl bg-white/20 ring-1 ring-white/40"
+              />
+              <div>
+                <h1 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
+                  HawaSathi
+                </h1>
+                <p className="mt-1 text-sm text-emerald-50/90 sm:text-base">
+                  Loading your air-aware daily planner…
+                </p>
+              </div>
             </div>
           </div>
         </header>
-        <main className="mx-auto max-w-3xl space-y-5 px-4 py-6 sm:px-6">
-          <div className="rounded-xl border bg-card p-6" role="status">
-            <div className="h-4 w-1/3 animate-pulse rounded bg-muted" />
-            <div className="mt-3 h-24 w-full animate-pulse rounded bg-muted" />
-          </div>
+        <main className="mx-auto max-w-4xl space-y-5 px-4 py-8 sm:px-6">
+          <div
+            className="card-shadow h-40 animate-pulse rounded-2xl border bg-card"
+            role="status"
+            aria-label="Loading HawaSathi"
+          />
         </main>
       </div>
     ),
