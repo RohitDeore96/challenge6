@@ -26,29 +26,47 @@ Recommended reading order for an evaluator:
    the "potentially better window" analysis.
 5. **[evidence/06-deployed-ai-answer-exclusion.json](evidence/06-deployed-ai-answer-exclusion.json)**
    and **[07-deployed-ai-answer-child.json](evidence/07-deployed-ai-answer-child.json)**
-   — two real `gemini-3.5-flash-lite` answers captured from the **deployed
-   site** on 2026-11-27: `status: "ok"`, model label present, explanation +
-   per-action notes only, schema-validated. The question is embedded in the
-   file; the air payload and plan it was grounded in are items 3 and 4.
-6. **[evidence/08-honest-fallback-no-key.json](evidence/08-honest-fallback-no-key.json)**
-   — the same route with a question and no Gemini key (local production build
-   of the same commit): plan intact, honest AI unavailable state
-   (`key_not_configured`, model label `gemini-3.5-flash-lite`).
-7. **[screenshots/desktop-landing.png](screenshots/desktop-landing.png)** —
-   the deployed starting screen: gradient hero, logo, capability chips and
-   the privacy-minimal household profile.
-8. **[screenshots/desktop-air.png](screenshots/desktop-air.png)** — live Delhi
-   data on the deployed site: provenance line, hero indicative India AQI
-   estimate with the category-coloured 0-500 gauge, PM2.5/PM10/US AQI cards.
-9. **[screenshots/desktop-plan.png](screenshots/desktop-plan.png)** — the
-   household profile and the first plan pillar on the deployed site.
-10. **[screenshots/desktop-ai-answer.png](screenshots/desktop-ai-answer.png)**
+   — two real model answers captured from the **deployed site** on 2026-11-27
+   with the v2 pipeline: `status: "ok"`, model label present, natural
+   (non-template) explanation + per-action notes, schema-validated. The
+   question is embedded in the file; the air payload and plan it was grounded
+   in are items 3 and 4.
+6. **[evidence/09-deployed-ai-other-city-mumbai.json](evidence/09-deployed-ai-other-city-mumbai.json)**
+   — **other-city answering**: home is Pune, the question asks about Mumbai;
+   `queriedLocations` records the live Mumbai fetch and the answer quotes
+   Mumbai's own real numbers (US AQI 178, indicative estimate 184) — not
+   Pune's, and not invented.
+7. **[evidence/10-deployed-ai-neighbourhood-warje.json](evidence/10-deployed-ai-neighbourhood-warje.json)**
+   — **neighbourhood answering**: "what is warje aqi in pune"; Warje is not in
+   GeoNames, so it was resolved via OpenStreetMap Nominatim
+   (`queriedLocations: [Pune home, Warje ok]`) and its own live grid fetch was
+   made before the model answered.
+8. **[evidence/11-deployed-ai-plan-briefing.json](evidence/11-deployed-ai-plan-briefing.json)**
+   — the **automatic AI briefing** generated with every plan (no question
+   asked): freshly worded prose plus action notes, no canned template.
+9. **[evidence/12-deployed-ai-general-question.json](evidence/12-deployed-ai-general-question.json)**
+   — a **general-knowledge question** ("What does an AQI of 200 mean for young
+   children?") answered from general knowledge and tied to the real Delhi
+   context, with no invented readings.
+10. **[evidence/08-honest-fallback-no-key.json](evidence/08-honest-fallback-no-key.json)**
+    — the same route with a question and no Gemini key (local production build
+    of the same commit): plan intact, honest AI unavailable state
+    (`key_not_configured`, model label `gemini-3.5-flash-lite`).
+11. **[screenshots/desktop-landing.png](screenshots/desktop-landing.png)** —
+    the deployed starting screen: gradient hero, logo, capability chips and
+    the privacy-minimal household profile.
+12. **[screenshots/desktop-air.png](screenshots/desktop-air.png)** — live Delhi
+    data on the deployed site: provenance line, hero indicative India AQI
+    estimate with the category-coloured 0-500 gauge, PM2.5/PM10/US AQI cards.
+13. **[screenshots/desktop-plan.png](screenshots/desktop-plan.png)** — the
+    household profile and the first plan pillar on the deployed site.
+14. **[screenshots/desktop-ai-answer.png](screenshots/desktop-ai-answer.png)**
     — a real model answer rendered in the deployed UI: model label, grounded
     prose, per-action notes, disclaimer.
-11. **[screenshots/desktop-ai-fallback.png](screenshots/desktop-ai-fallback.png)**
+15. **[screenshots/desktop-ai-fallback.png](screenshots/desktop-ai-fallback.png)**
     — the honest no-key fallback state in the real UI (local build), with the
     deterministic plan still fully usable above it.
-12. **[screenshots/mobile-390-plan.png](screenshots/mobile-390-plan.png)** —
+16. **[screenshots/mobile-390-plan.png](screenshots/mobile-390-plan.png)** —
     the deployed site at 390 px width: hero, step chips and the AQI card.
 
 ## Reproduce it yourself

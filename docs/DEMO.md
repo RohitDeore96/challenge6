@@ -1,9 +1,9 @@
 # DEMO — evaluator walk-through (about 3 minutes)
 
 No API key is needed for any of this. The deterministic engine produces the
-plan; the AI panel either answers (if the deployment has a server-side key —
-the live app currently has one) or shows an honest "unavailable" state that
-says why. Everything below runs against the
+plan and an AI briefing ships with it (if the deployment has a server-side
+key — the live app currently has one); without a key the AI panel shows an
+honest "unavailable" state that says why. Everything below runs against the
 **[live app](https://challenge6-phi.vercel.app/)**; the same steps work on a
 local build ([setup](../README.md#setup)).
 
@@ -38,16 +38,18 @@ local build ([setup](../README.md#setup)).
    factor, travel impacts stay qualitative instead of guessed.
 6. **Disagree with an action.** Mark any card "Using this action" or "Not
    practical for us". The plan rebuilds deterministically from the same air
-   data — the AI is not involved — and the pill on the heading ("N actions
-   marked as used") updates.
-7. **Ask why (step 5).** Type "Why were walking and cycling excluded from my
-   commute alternatives today?" in the ask panel. With a key configured, the
-   answer card is labelled `gemini-3.5-flash-lite · server-side call` and
-   grounded in today's values and the approved action list, with per-action
-   notes and a disclaimer ([real captured
-   answer](screenshots/desktop-ai-answer.png)). Without a key, the panel says
-   the AI explanation is unavailable (with the reason) and the plan stays
-   fully usable — this is the designed fallback
+   data and a fresh AI briefing arrives with it; the pill on the heading ("N
+   actions marked as used") updates.
+7. **Ask anything (step 5).** An AI briefing is already waiting under the
+   plan. Try "What is the AQI in Mumbai right now?" or "what is warje aqi in
+   pune" — the server resolves the place, fetches live data for that exact
+   spot, and a chip confirms it ("Live data fetched for Mumbai, Maharashtra").
+   The answer card is labelled with the configured model and grounded in
+   today's values, the approved action list and the freshly fetched data,
+   with per-action notes and a disclaimer ([real captured
+   answers](evidence/09-deployed-ai-other-city-mumbai.json)). Without a key,
+   the panel says the AI explanation is unavailable (with the reason) and the
+   plan stays fully usable — this is the designed fallback
    ([screenshot](screenshots/desktop-ai-fallback.png)), not an error.
 8. **Share (step 6).** Copy the community bulletin: a locality-level summary
    with the same provenance labels and three community actions. The app never

@@ -10,13 +10,13 @@ HawaSathi (Hindi: हवा = air, साथी = companion) helps families and 
 
 **[Open the live app](https://challenge6-phi.vercel.app/)** · [Evaluator quick start](#evaluator-quick-start) · [Full demo script](docs/DEMO.md) · [Evidence index](docs/EVIDENCE_INDEX.md)
 
-Built for **PromptWars Challenge 6 — Urban Air Quality Assistant** · Next.js 16 · TypeScript (strict) · Tailwind CSS 4 · shadcn/ui · Zod · Vitest · AI: `gemini-3.5-flash-lite` (server-side only) · MIT licence
+Built for **PromptWars Challenge 6 — Urban Air Quality Assistant** · Next.js 16 · TypeScript (strict) · Tailwind CSS 4 · shadcn/ui · Zod · Vitest · AI: `gemini-3.5-flash-lite` via `AI_MODEL` (server-side only) · MIT licence
 
 [![CI](https://github.com/RohitDeore96/challenge6/actions/workflows/ci.yml/badge.svg)](https://github.com/RohitDeore96/challenge6/actions)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-> **Recorded verification, 2026-11-27 (UTC)** (see [docs/LIVE_VERIFICATION.md](docs/LIVE_VERIFICATION.md), [docs/METRICS.md](docs/METRICS.md) and [worklog.md](worklog.md)). These are the results of one recorded run on that date, not a live status: lint, typecheck and the production build clean · **93 unit/integration tests passed across 7 files** · live provider data served end-to-end **on the deployed Vercel site** (Delhi US AQI 220 → indicative India AQI estimate 355 "Very Poor"; Mumbai US AQI 189 → 184 "Moderately polluted") · **two real `gemini-3.5-flash-lite` answers captured from the deployed site** with schema-validated, source-labelled output · the no-key AI fallback verified end-to-end and in the real UI · zero fabricated readings at any point.
+> **Recorded verification, 2026-11-27 (UTC)** (see [docs/LIVE_VERIFICATION.md](docs/LIVE_VERIFICATION.md), [docs/METRICS.md](docs/METRICS.md) and [worklog.md](worklog.md)). These are the results of one recorded run on that date, not a live status: lint, typecheck and the production build clean · **102 unit/integration tests passed across 8 files** · live provider data served end-to-end **on the deployed Vercel site** (Delhi US AQI 223 → indicative India AQI estimate 355 "Very Poor"; Mumbai US AQI 178 → 184 "Moderately polluted") · **six real `gemini-3.5-flash-lite` captures from the deployed site**: plan-grounded answers, an **other-city answer with live fetched data for Mumbai**, a **neighbourhood answer for Warje resolved via OpenStreetMap**, the automatic plan briefing and a general-knowledge answer · the no-key AI fallback verified end-to-end and in the real UI · zero fabricated readings at any point.
 
 <p align="center">
   <img src="docs/screenshots/desktop-air.png" alt="Live Delhi air summary on the deployed site: provenance line, hero model-derived India AQI estimate 355 Very Poor with a category-coloured 0-500 gauge, PM2.5, PM10 and the separate US AQI card" width="49%" />
@@ -54,10 +54,12 @@ Core flow: **choose location → load air data → describe household → genera
 
 ## How the AI is used (and not used)
 
-- Model: **`gemini-3.5-flash-lite`**, called **server-side only** from an API route with the key in `GEMINI_API_KEY` (never `NEXT_PUBLIC_`, never in the browser bundle).
-- **Gemini explains; it never calculates.** AQI derivation, safety gates, action selection and impact numbers are deterministic and unit-tested. The AI receives the approved action list + timestamped data and returns prose that is schema-validated (action IDs verified, URLs/HTML rejected, length-bounded) before rendering.
-- **Verified against the real model on the deployed site (2026-11-27):** two live questions captured with verbatim schema-validated answers — [docs/evidence/06-deployed-ai-answer-exclusion.json](docs/evidence/06-deployed-ai-answer-exclusion.json) and [07-deployed-ai-answer-child.json](docs/evidence/07-deployed-ai-answer-child.json), plus a screenshot of the answer in the real UI ([docs/screenshots/desktop-ai-answer.png](docs/screenshots/desktop-ai-answer.png)). Evaluation and design: [docs/AI_EVALUATION.md](docs/AI_EVALUATION.md), [docs/PROMPT_DESIGN.md](docs/PROMPT_DESIGN.md).
-- **Fully functional without the AI:** no key, a 429, a timeout or malformed output → the plan stays and the UI shows an honest "AI explanation unavailable" state ([docs/evidence/08-honest-fallback-no-key.json](docs/evidence/08-honest-fallback-no-key.json), [docs/screenshots/desktop-ai-fallback.png](docs/screenshots/desktop-ai-fallback.png)).
+- Model: configured by the **`AI_MODEL`** environment variable (default **`gemini-3.5-flash-lite`**), called **server-side only** from an API route with the key in `GEMINI_API_KEY` (never `NEXT_PUBLIC_`, never in the browser bundle). Every response echoes the exact model ID in `ai.model`.
+- **An AI briefing ships with every plan** — freshly worded each time, never a canned template — and **every question gets a direct answer**.
+- **Ask about any place.** If a question names another city, town or neighbourhood, the server resolves it (curated 80-city list → Open-Meteo/GeoNames geocoder → OpenStreetMap Nominatim for localities), **fetches live Open-Meteo data for that exact place** and hands the real numbers to the model. The UI shows chips stating exactly which places got live data.
+- **Gemini explains; it never calculates or invents.** AQI derivation, safety gates, action selection and impact numbers are deterministic and unit-tested. The AI's prose is schema-validated (action IDs verified, URLs/HTML rejected, length-bounded) before rendering, and places without a live reading are answered honestly — never with guessed numbers.
+- **Verified against the real model on the deployed site (2026-11-27):** six live captures — plan-grounded answers ([06](docs/evidence/06-deployed-ai-answer-exclusion.json), [07](docs/evidence/07-deployed-ai-answer-child.json)), the Mumbai other-city answer ([09](docs/evidence/09-deployed-ai-other-city-mumbai.json)), the Warje neighbourhood answer ([10](docs/evidence/10-deployed-ai-neighbourhood-warje.json)), the automatic briefing ([11](docs/evidence/11-deployed-ai-plan-briefing.json)) and a general-knowledge answer ([12](docs/evidence/12-deployed-ai-general-question.json)). Evaluation and design: [docs/AI_EVALUATION.md](docs/AI_EVALUATION.md), [docs/PROMPT_DESIGN.md](docs/PROMPT_DESIGN.md).
+- **Fully functional without the AI:** no key, a 429, a timeout or malformed output → the plan stays and the UI shows an honest "AI explanation unavailable" state ([docs/evidence/08-honest-fallback-no-key.json](docs/evidence/08-honest-fallback-no-key.json)).
 
 ## Evaluator quick start
 
@@ -67,10 +69,10 @@ No API key is needed to explore the product. Open the **[live app](https://chall
 2. **Describe your household.** Car commute, 8 km one-way, "Incense / dhoop" indoor source, a more-sensitive member at home, budget under ₹500 — then press **Generate today's plan**.
 3. **Read the three pillars.** Breathe safer today · Cleaner indoor air · Lower-emission routine. Each card says why it fits today, what impact to expect, and how the number was derived.
 4. **Mark what works.** Press **Using this action** or **Not practical for us** on any card — the plan re-runs deterministically and the impact updates.
-5. **Ask the AI why.** In *Ask about your plan*, try "Why were walking and cycling excluded from my commute alternatives today?" — the reply is labelled `gemini-3.5-flash-lite · server-side call` and only explains; every number stays from the engine.
+5. **Ask anything — other places included.** The AI briefing is already on the page. In *AI briefing & answers*, try "What is the AQI in Mumbai right now?" or "what is warje aqi in pune" — the server fetches live data for the exact place you named, a chip confirms it ("Live data fetched for Mumbai, Maharashtra"), and the reply is labelled with the configured model. It only explains; every number comes from the data engine or the live fetch.
 6. **Share a bulletin.** Copy the community bulletin — locality-level, provenance included, no household details.
 
-**What needs a key and what does not.** The AI panel calls the hosted model only when the deployment has a server-side `GEMINI_API_KEY`. Without one, the plan stays fully functional and the panel answers with an honest "AI explanation unavailable" state ([evidence](docs/evidence/08-honest-fallback-no-key.json)). Air data, the plan, impact maths and the bulletin never depend on AI.
+**What needs a key and what does not.** The AI layer calls the hosted model only when the deployment has a server-side `GEMINI_API_KEY`. Without one, the plan stays fully functional and the AI panel shows an honest "AI explanation unavailable" state ([evidence](docs/evidence/08-honest-fallback-no-key.json)). Air data, the plan, impact maths and the bulletin never depend on AI.
 
 ## How to verify HawaSathi
 
@@ -112,7 +114,7 @@ src/
 │   ├── planner/rules.ts          # deterministic rule engine + safety gates
 │   ├── planner/window.ts         # "potentially better window" analysis
 │   ├── impact/emissions.ts       # sourced emission factors + formula
-│   ├── ai/{prompt,gemini,validate}.ts
+│   ├── ai/{prompt,gemini,validate,question-locations}.ts
 │   ├── schemas.ts                # zod contracts for every boundary
 │   ├── cache.ts, rate-limit.ts, utils.ts
 │   └── data/cities.ts            # original curated Indian city list
@@ -133,6 +135,7 @@ bun run dev        # http://localhost:3000
 
 ```
 GEMINI_API_KEY=replace_with_google_ai_studio_key
+AI_MODEL=gemini-3.5-flash-lite   # optional; this is the default
 ```
 
 Without a key the app runs fully: deterministic plans, honest "AI unavailable" labels.
@@ -142,7 +145,7 @@ Without a key the app runs fully: deterministic plans, honest "AI unavailable" l
 ```bash
 bun run lint       # eslint
 bun run typecheck  # tsc --noEmit
-bun run test       # vitest (93 tests: AQI, planner, window, impact, AI validation, provider, API)
+bun run test       # vitest (102 tests: AQI, planner, window, impact, AI validation, question locations, provider, API)
 bun run build      # production build (type errors fail the build)
 ```
 
@@ -152,9 +155,9 @@ CI runs all four on every push/PR (`.github/workflows/ci.yml`). The gates' recor
 
 1. Push the repository to GitHub (this repo). Every push to `main` redeploys production automatically.
 2. In Vercel: **Add New → Project → Import** `RohitDeore96/challenge6`. Framework preset: **Next.js** (auto-detected). No build overrides needed.
-3. Project Settings → Environment Variables → add `GEMINI_API_KEY` (Production + Preview), value from [Google AI Studio](https://aistudio.google.com/apikey).
+3. Project Settings → Environment Variables → add `GEMINI_API_KEY` (Production + Preview), value from [Google AI Studio](https://aistudio.google.com/apikey). Optionally add `AI_MODEL` = `gemini-3.5-flash-lite` (it is the default, but setting it makes the deployment self-documenting).
 4. Deploy. PRs get preview deployments. Security headers come from `vercel.json`.
-5. Verify: production URL loads in incognito, `/api/air-quality?lat=28.61&lon=77.21&label=Delhi` returns live data, the AI panel answers with the model label, and removing the env var shows the honest fallback.
+5. Verify: production URL loads in incognito, `/api/air-quality?lat=28.61&lon=77.21&label=Delhi` returns live data, a plan generation shows the AI briefing, asking "What is the AQI in Mumbai right now?" shows the "Live data fetched for Mumbai" chip, and removing the env vars shows the honest fallback.
 
 **A note on the console message "A listener indicated an asynchronous response…":** that error comes from a **browser extension** (password managers, ad blockers and similar extensions use `chrome.runtime` messaging); it is not produced by HawaSathi, which uses no extension APIs. Open the site in incognito with extensions disabled and the console stays clean — this is documented in [docs/LIVE_VERIFICATION.md](docs/LIVE_VERIFICATION.md).
 
@@ -162,7 +165,7 @@ CI runs all four on every push/PR (`.github/workflows/ci.yml`). The gates' recor
 
 - No accounts, names, addresses, phone numbers or diagnoses are collected. Profile choices and action feedback stay in browser localStorage. Coordinates are rounded to 2 decimals (~1.1 km) server-side; nothing finer is stored or logged.
 - The app provides general public-health information. It does not diagnose, prescribe or replace doctors/local authorities, and it never claims one household's commute changes the city's AQI.
-- Free-tier Gemini calls carry only non-sensitive context (city label, category, values, profile flags). Details: [docs/DATA_METHODOLOGY.md](docs/DATA_METHODOLOGY.md).
+- Free-tier Gemini calls carry only non-sensitive context (city labels, category, values, profile flags) — never coordinates, including for places resolved from a question. Details: [docs/DATA_METHODOLOGY.md](docs/DATA_METHODOLOGY.md).
 
 ## Limitations (honest list)
 

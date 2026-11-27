@@ -5,7 +5,8 @@ maintainer's automated assistant. Three surfaces were verified:
 
 1. the **raw provider** (air-quality-api.open-meteo.com, verbatim capture);
 2. the **deployed production site** at `https://challenge6-phi.vercel.app/`
-   (commit `e60ac77` era build — the UI currently deployed);
+   (commit `e60ac77` era build for run 1; commit `abf7be5` era build — the
+   v2 AI pipeline — for run 2 below);
 3. a **local production build** (`next start`) of the same commit, used only
    for the no-key AI fallback contract, because the deployed site has a key
    configured and the AI panel there answers with the real model.
@@ -23,11 +24,15 @@ real interface (desktop 1440×900 and mobile 390×844, Chromium).
 | 2 | Deployed GET `/api/air-quality` (Delhi) | `ok: true`; US AQI 220; indicative India AQI estimate **355 "Very Poor"**; freshness `fresh`; pollutants included/excluded listed | [03](evidence/03-deployed-air-delhi.json) |
 | 3 | Deployed GET `/api/air-quality` (Mumbai) | `ok: true`; US AQI 189; indicative estimate **184 "Moderately polluted"** | [04](evidence/04-deployed-air-mumbai.json) |
 | 4 | Deployed POST `/api/assistant` (scripted Delhi commuter household, no question) | deterministic plan: 9 actions across breathe/indoor/emission pillars, 9 honest exclusions, "potentially better window" found (14:00–15:00, ~89.4 µg/m³ vs ~224.7, ~60% lower, same series) | [05](evidence/05-deployed-plan-delhi.json) |
-| 5 | Deployed POST `/api/assistant` **with a question** (real AI) | `ai.status: "ok"`, `model: "gemini-3.5-flash-lite"`; schema-validated prose (494 chars) + 4 per-action notes, grounded in the same air payload | [06](evidence/06-deployed-ai-answer-exclusion.json) |
-| 6 | Deployed POST `/api/assistant` with a second question (real AI) | `ai.status: "ok"`; schema-validated prose (589 chars) + 4 per-action notes | [07](evidence/07-deployed-ai-answer-child.json) |
+| 5 | Deployed POST `/api/assistant` **with a question** (real AI, v2 pipeline) | `ai.status: "ok"`, `model: "gemini-3.5-flash-lite"`; natural (non-template) prose + notes, grounded in the same air payload | [06](evidence/06-deployed-ai-answer-exclusion.json) |
+| 6 | Deployed POST `/api/assistant` with a second question (real AI, v2 pipeline) | `ai.status: "ok"`; direct answer first, plan pointer second | [07](evidence/07-deployed-ai-answer-child.json) |
 | 7 | Local production build, **no Gemini key configured**, same question shape | plan intact (9 actions) + honest AI state: `status: "unavailable"`, `reason: "key_not_configured"`, `model: "gemini-3.5-flash-lite"` | [08](evidence/08-honest-fallback-no-key.json) |
 | 8 | Real browser journey (Chromium 1440×900 and 390×844) against the deployed site | landing → Delhi air (gauge) → household profile → plan (3 pillars) → real AI answer → community bulletin, all rendered; screenshots committed | [screenshots/](screenshots/) |
 | 9 | Browser console on the deployed site | **no console messages and no page errors** in a clean profile (see the note below about the extension-related message some users see) | this document |
+| 10 | **Run 2 (v2 AI pipeline): other-city question** — home Pune, "What is the AQI in Mumbai right now?" | `ai.status: "ok"`; `queriedLocations: [{"Mumbai, Maharashtra", "ok"}]` — live Mumbai data fetched and quoted (US AQI 178, estimate 184); no coordinates sent to the model | [09](evidence/09-deployed-ai-other-city-mumbai.json) |
+| 11 | **Run 2: neighbourhood question** — home Pune, "what is warje aqi in pune" | `ai.status: "ok"`; `queriedLocations: [Pune home, Warje ok]` — Warje resolved via OpenStreetMap Nominatim (GeoNames lacks it), own live fetch | [10](evidence/10-deployed-ai-neighbourhood-warje.json) |
+| 12 | **Run 2: no question** — plan generation (Pune) | `ai.status: "ok"`; freshly worded briefing + 2 notes — no canned template | [11](evidence/11-deployed-ai-plan-briefing.json) |
+| 13 | **Run 2: general-knowledge question** — "What does an AQI of 200 mean for young children?" | `ai.status: "ok"`; general answer tied to the real Delhi context, no invented readings | [12](evidence/12-deployed-ai-general-question.json) |
 
 ## Exact commands
 
@@ -61,6 +66,37 @@ curl -s -X POST "http://localhost:3000/api/assistant" \
   > docs/evidence/08-honest-fallback-no-key.json
 ```
 
+### Run 2 — v2 AI pipeline (other-city / neighbourhood / briefing / general)
+
+```bash
+# other-city question: live data for Mumbai fetched server-side
+PUNE='{"lat":18.52,"lon":73.85,"label":"Pune"}'
+COMMUTER='{"routine":"commute","commuteMode":"car","oneWayDistanceKm":10,"budget":"under_500","cookingFuel":"lpg","indoorSources":["incense"],"hasPurifier":"no","sensitiveMember":"no","scheduleFlexibility":"flexible"}'
+curl -s -X POST "https://challenge6-phi.vercel.app/api/assistant" \
+  -H "Content-Type: application/json" \
+  -d "{\"location\":$PUNE,\"profile\":$COMMUTER,\"question\":\"What is the AQI in Mumbai right now?\"}" \
+  > docs/evidence/09-deployed-ai-other-city-mumbai.json
+
+# neighbourhood question: Warje resolved via Nominatim, own live fetch
+#   (same body with "question":"what is warje aqi in pune")
+curl -s -X POST "https://challenge6-phi.vercel.app/api/assistant" \
+  -H "Content-Type: application/json" \
+  -d "{\"location\":$PUNE,\"profile\":$COMMUTER,\"question\":\"what is warje aqi in pune\"}" \
+  > docs/evidence/10-deployed-ai-neighbourhood-warje.json
+
+# no question: automatic AI briefing ships with the plan
+curl -s -X POST "https://challenge6-phi.vercel.app/api/assistant" \
+  -H "Content-Type: application/json" \
+  -d "{\"location\":$PUNE,\"profile\":$COMMUTER}" \
+  > docs/evidence/11-deployed-ai-plan-briefing.json
+
+# general-knowledge question (Delhi household)
+curl -s -X POST "https://challenge6-phi.vercel.app/api/assistant" \
+  -H "Content-Type: application/json" \
+  -d '{"location":{"lat":28.61,"lon":77.21,"label":"Delhi"},"profile":{"routine":"commute","commuteMode":"car","oneWayDistanceKm":10,"budget":"under_500","cookingFuel":"lpg","indoorSources":["incense"],"hasPurifier":"no","sensitiveMember":"no","scheduleFlexibility":"flexible"},"question":"What does an AQI of 200 mean for young children?"}' \
+  > docs/evidence/12-deployed-ai-general-question.json
+```
+
 The browser journey was executed with an automation browser (Chromium) against
 the deployed URL: search city → select Delhi → fill profile → generate plan →
 ask the AI question → copy-view the bulletin, with screenshots at 1440×900 and
@@ -79,9 +115,11 @@ Plan (Delhi commuter household): 3 exposure actions, 3 indoor actions,
 14:00–15:00 at ~89.4 µg/m³ vs ~224.7 µg/m³ in adjacent hours (~60% lower,
 same pollutant and provider series).
 
-AI answers (deployed site): both `status: "ok"` with `model:
+AI answers (deployed site): all `status: "ok"` with `model:
 "gemini-3.5-flash-lite"`, explanation + per-action notes arrays only, no
-invented action IDs, no URLs/HTML, disclaimer rendered in the UI. The
+invented action IDs, no URLs/HTML, disclaimer rendered in the UI. Run 2 adds
+`queriedLocations` transparency (which places got live data) and shows varied
+openings across captures — no repeated template. The
 [validation contract](../src/lib/ai/validate.ts) and its tests are unchanged.
 
 ## About the "message channel closed" console message

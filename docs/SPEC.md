@@ -60,16 +60,23 @@ below is paraphrased from the brief; the brief itself is the contract.
 
 ## R6 — AI layer: explain, never calculate
 
-- **Implementation:** `gemini-3.5-flash-lite`, server-side only
-  (`src/lib/ai/gemini.ts`), strict JSON contract, schema-validated output
-  (`src/lib/ai/validate.ts`), honest fallback states.
+- **Implementation:** model configured by `AI_MODEL` (default
+  `gemini-3.5-flash-lite`), server-side only (`src/lib/ai/gemini.ts`), strict
+  JSON contract, schema-validated output (`src/lib/ai/validate.ts`), honest
+  fallback states. An AI briefing ships with every plan; questions that name
+  other places get live data fetched for those places
+  (`src/lib/ai/question-locations.ts`).
 - **Evidence:** [AI_EVALUATION.md](AI_EVALUATION.md);
   [08-honest-fallback-no-key.json](evidence/08-honest-fallback-no-key.json)
   (plan intact, AI state honest without a key);
   [desktop-ai-fallback.png](screenshots/desktop-ai-fallback.png);
   real-model answers from the deployed site:
   [06](evidence/06-deployed-ai-answer-exclusion.json),
-  [07](evidence/07-deployed-ai-answer-child.json).
+  [07](evidence/07-deployed-ai-answer-child.json),
+  other-city Mumbai ([09](evidence/09-deployed-ai-other-city-mumbai.json)),
+  neighbourhood Warje ([10](evidence/10-deployed-ai-neighbourhood-warje.json)),
+  automatic briefing ([11](evidence/11-deployed-ai-plan-briefing.json)),
+  general knowledge ([12](evidence/12-deployed-ai-general-question.json)).
 
 ## R7 — Real data or an honest unavailable state; explain the data type
 

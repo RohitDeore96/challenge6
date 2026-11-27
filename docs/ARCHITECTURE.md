@@ -25,7 +25,7 @@ Browser (single page, client-side state)
 │                                    │
 ▼                                    ▼
 Open-Meteo Air Quality API        Gemini API
-(CAMS model forecast)             gemini-3.5-flash-lite
+(CAMS model forecast)             AI_MODEL env var (default gemini-3.5-flash-lite)
 ```
 
 ## Layers and rules
@@ -39,12 +39,13 @@ Open-Meteo Air Quality API        Gemini API
 | Rule engine | `src/lib/planner/rules.ts` | deterministic selection with safety gates (severe smog, fixed schedules, budget ₹0, purifier ownership); same input → same plan, always |
 | Better-window analysis | `src/lib/planner/window.ts` | compares forecast windows against current conditions; small differences are reported as "not meaningfully better" |
 | Impact estimates | `src/lib/impact/emissions.ts` | published UK DEFRA/BEIS 2024 default factors; per-person maths; no distance + no factor → no numeric claim |
-| AI transport | `src/lib/ai/gemini.ts` | REST, server-only, 10 s timeout, one bounded retry for 429/5xx, no key → honest unavailable |
+| AI transport | `src/lib/ai/gemini.ts` | REST, server-only, model from `AI_MODEL` (default `gemini-3.5-flash-lite`), 10 s timeout, one bounded retry for 429/5xx, no key → honest unavailable |
 | AI acceptance | `src/lib/ai/validate.ts` | JSON-mode output validated against zod: known action IDs only, no URLs/HTML/markdown, length caps |
-| Prompt | `src/lib/ai/prompt.ts` | role boundary, non-sensitive context, untrusted-question wrapping (see [PROMPT_DESIGN.md](PROMPT_DESIGN.md)) |
+| Prompt | `src/lib/ai/prompt.ts` | role boundary + style rules, non-sensitive context, untrusted-question wrapping (see [PROMPT_DESIGN.md](PROMPT_DESIGN.md)) |
+| Question-time place resolution | `src/lib/ai/question-locations.ts` | city list → Open-Meteo/GeoNames → Nominatim (place-like types only, India-filtered); ≤2 places; home dedupe ~2 km; never throws |
 | Cache / rate limit | `src/lib/cache.ts`, `rate-limit.ts` | in-memory, per-instance, best-effort (stated in [SECURITY.md](../SECURITY.md)) |
 | UI | `src/components/*` | single-page flow; shadcn/ui primitives (button, input, label, select, skeleton, textarea, toast) |
-| Tests | `tests/*.test.ts` | 93 unit/integration tests incl. a mocked-provider API suite |
+| Tests | `tests/*.test.ts` | 102 unit/integration tests incl. a mocked-provider API suite and the place-resolution suite |
 
 ## Data flow guarantees
 
@@ -52,8 +53,8 @@ Open-Meteo Air Quality API        Gemini API
    reachable only from the two server routes, so the key and the quota stay
    server-side.
 2. **The plan is pure.** `generatePlan` takes timestamped normalised data plus
-   the profile and returns the same plan for the same inputs; the AI is called
-   only when the user asks a question, and its answer cannot change the plan.
+   the profile and returns the same plan for the same inputs; the AI explains
+   the plan and answers questions, but its answer cannot change the plan.
 3. **Failures degrade honestly at every level.** Provider failure → `{ ok:
    false, error }`; AI failure → plan intact + explicit unavailable state;
    localStorage unavailable → in-session mode. Nothing fabricates a reading.

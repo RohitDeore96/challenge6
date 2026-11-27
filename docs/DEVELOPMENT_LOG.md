@@ -122,3 +122,36 @@ work brief (PROMPTWARS_CHALLENGE_6_WORK.md) as the product contract.
   structure: CONTRIBUTING, SECURITY, LICENSE (MIT), worklog, vercel.json
   security headers, SPEC/ARCHITECTURE/DECISIONS/DEMO/LIVE_VERIFICATION/
   METRICS/AI_EVALUATION/ACCESSIBILITY_REPORT/EVIDENCE_INDEX.
+
+## 2026-11-27 — Phase 9: v2 AI pipeline — natural answers with real data
+
+- Feedback from the deployed site: AI answers sounded preset (every reply
+  opened with the same "For \<city\>, the model-derived indicative AQI is …"
+  pattern) and questions about other cities could only be refused, because
+  the model received data for the selected location only. Also, the AI ran
+  only when a question was typed, so a plain plan generation produced no AI
+  text at all.
+- `src/lib/ai/prompt.ts` rewritten: an AI briefing is now requested with
+  every plan; the task text answers the user's actual question instead of
+  reciting the plan; explicit style rules ban template openings and machine
+  language while keeping every honesty rule (no invented readings, approved
+  action IDs only, no diagnosis).
+- New `src/lib/ai/question-locations.ts`: when a question names another
+  place, it is resolved deterministically (curated 80-city list → Open-Meteo
+  geocoding/GeoNames → OpenStreetMap Nominatim for neighbourhoods such as
+  Warje, India-filtered, place-like types only) and the route fetches live
+  Open-Meteo data for up to two places per question. The prompt carries
+  privacy-stripped live data blocks; queried places are reported to the UI
+  as `queriedLocations` chips (ok/failed/home).
+- Model ID made configurable: `AI_MODEL` env var (default
+  `gemini-3.5-flash-lite`), echoed in every `ai.model`; temperature 0.4 →
+  0.8; maxOutputTokens 700 → 1024; route `maxDuration` 30 s.
+- UI: GeminiPanel shows the briefing automatically, live-data chips, dynamic
+  model badge; plan refreshes regenerate the briefing in the same request.
+- Tests: +9 (question-location resolver suite and API checks for the live
+  data block, coordinate privacy, home-mention reuse) → 102 across 8 files.
+- Evidence re-captured from the deployed site after deploy: six captures
+  (plan-grounded, other-city Mumbai, neighbourhood Warje, automatic briefing,
+  general knowledge) — all `status: "ok"` on the real model; docs updated
+  (PROMPT_DESIGN v2 log, AI_EVALUATION, LIVE_VERIFICATION run 2, EVIDENCE
+  index, SPEC, ARCHITECTURE, DEMO, METRICS, README).

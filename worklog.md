@@ -151,3 +151,48 @@ a local build) were removed and replaced entirely:
 | Browser journey (Chromium 1440×900 + 390×844) against the deployed site | full flow rendered; screenshots committed |
 | Console check (clean profile, deployed site) | zero console messages, zero page errors |
 | Token hygiene check | credential-pattern scan over the working tree → no match; the temporary AI key was used only in Vercel env and never entered the repository |
+
+## 2026-11-27 — Session 4: v2 AI pipeline (natural answers, live data for any place)
+
+### A. Why
+
+User report on the deployed site: AI replies looked like preset messages —
+every answer opened with the same "For \<city\>, the model-derived indicative
+AQI is …" pattern, and questions about other cities (Mumbai) or
+neighbourhoods (Warje) could only be refused ("the provided context contains
+data only for Pune"). Root causes found in code:
+
+1. the task instruction forced plan recitation, so every reply had the same
+   structure;
+2. the model received data for the selected location only;
+3. the AI ran only when a question was typed — a plain plan generation
+   produced no AI text at all (later fixed on the previous session's always-AI
+   change; this session's rewrite keeps it and removes the template).
+
+### B. What changed (commits `9516243`, `9cea644`, `abf7be5`)
+
+| Area | Change |
+| --- | --- |
+| Prompt | v2 system instruction: honesty rules kept, explicit style rules added (no template openings, no machine language, answer-first); task text answers the question; briefing-with-plan path |
+| Question pipeline | new `src/lib/ai/question-locations.ts`: curated city list → Open-Meteo geocoder → Nominatim fallback (place-like types only, India-filtered); ≤2 places; live fetch per place (cached); `queriedLocations` transparency in the response and as UI chips |
+| Model config | `AI_MODEL` env var (default `gemini-3.5-flash-lite`), echoed in `ai.model`; temperature 0.8; maxOutputTokens 1024; `maxDuration` 30 |
+| UI | GeminiPanel: briefing appears with the plan, live-data chips, dynamic model badge; plan refresh regenerates the briefing |
+| Tests | +9 → 102 across 8 files (resolver suite; API checks for live data block without coordinates, home-mention reuse) |
+
+### C. Deployed-site verification (run 2, real model)
+
+| Capture | Result |
+| --- | --- |
+| Mumbai question (home Pune) | `ok`; queriedLocations Mumbai ok; answer quotes Mumbai's own US AQI 178 / estimate 184 |
+| Warje question (home Pune) | `ok`; Pune home + Warje ok (Nominatim resolve, own fetch); Warje numbers quoted |
+| No-question plan (Pune) | `ok`; freshly worded briefing + 2 notes |
+| General knowledge (Delhi) | `ok`; general answer tied to real context, no invented readings |
+| Two plan-grounded questions (Delhi) | `ok`; varied openings, notes reference real action IDs |
+
+### D. Commands executed (actual results)
+
+| Command | Result |
+| --- | --- |
+| `bun run lint` / `typecheck` / `test` / `build` | exit 0 / exit 0 / 102 passed / clean build |
+| 6× `curl` deployed `/api/assistant` (evidence captures) | all `ai.status: "ok"`, model `gemini-3.5-flash-lite` |
+| Credential scan | the temporary key was never committed; no `AQ.` / `ghp_` patterns in the tree |
