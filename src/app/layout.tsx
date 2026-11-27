@@ -26,6 +26,20 @@ export const metadata: Metadata = {
     "Gemini",
   ],
   authors: [{ name: "HawaSathi" }],
+  openGraph: {
+    title: "HawaSathi - Urban Air Quality Assistant",
+    description:
+      "Air-aware daily action plans for Indian families and communities: modelled air data with honest provenance, low-emission routines, indoor air actions and explainable impact estimates.",
+    images: [{ url: "/og-image.png", width: 1024, height: 1024 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "HawaSathi - Urban Air Quality Assistant",
+    description:
+      "Air-aware daily action plans for Indian families and communities.",
+    images: ["/og-image.png"],
+  },
 };
 
 export const viewport: Viewport = {

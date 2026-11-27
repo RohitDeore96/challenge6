@@ -232,7 +232,7 @@ export function HouseholdProfile({
               inputMode="decimal"
               min={0.2}
               max={150}
-              step={0.5}
+              step="any"
               placeholder="e.g. 8 (km)"
               className="min-h-11"
               value={distance}

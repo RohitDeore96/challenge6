@@ -95,3 +95,30 @@ work brief (PROMPTWARS_CHALLENGE_6_WORK.md) as the product contract.
   separated data card).
 - Production Vercel deployment + verification checklist to be completed at
   release (see README deployment section).
+
+## 2026-11-27 — verification run, defect fixes, evidence pack and repo alignment
+
+- Full verification run against a fresh clone of `main` (see `worklog.md` at
+  the repository root for the complete record; the run is the source of the
+  dated evidence pack in `docs/evidence/` and `docs/screenshots/`).
+- Defects caught by running the real gates and the real app:
+  - D1 `@types/node` missing from devDependencies — broke the Vercel
+    production build at the TypeScript step; declared explicitly.
+  - D2/D3/D4 missing shadcn helpers (`lib/utils`, `hooks/use-toast`), 13 dead
+    scaffold UI components (one importing an uninstalled package) and a stale
+    Tailwind v3 config — typecheck/build cleanliness restored; committed as
+    `c7cb3bb`.
+  - D5 distance input `step=0.5` + `min=0.2` silently blocked valid values
+    (including the placeholder example "8") via native validation; changed to
+    `step="any"` so the documented zod range (0.2–150) is the single
+    validator. Found by driving the real form in Chromium.
+- Evidence pack captured from the real production build with live provider
+  data (see `docs/EVIDENCE_INDEX.md`); AI panel verified in its designed
+  no-key fallback state.
+- Brand: uploaded HawaSathi logo integrated (header mark, favicon/apple icon,
+  og image, README). Derived assets documented in the third-party notices
+  only as needed (logo is an original owner-provided asset).
+- Repository documentation aligned with the maintainer's Challenge 5
+  structure: CONTRIBUTING, SECURITY, LICENSE (MIT), worklog, vercel.json
+  security headers, SPEC/ARCHITECTURE/DECISIONS/DEMO/LIVE_VERIFICATION/
+  METRICS/AI_EVALUATION/ACCESSIBILITY_REPORT/EVIDENCE_INDEX.

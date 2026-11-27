@@ -13,8 +13,8 @@
  * hydration mismatches. No account, no address, no medical data anywhere.
  */
 
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
-import { Wind } from "lucide-react";
 import { LocationPicker } from "@/components/LocationPicker";
 import { AirQualitySummary } from "@/components/AirQualitySummary";
 import { PollutantDetails } from "@/components/PollutantDetails";
@@ -200,10 +200,15 @@ export function HawaSathiApp() {
       {/* Header */}
       <header className="border-b bg-background/95">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-4 sm:px-6">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-700">
-            <Wind aria-hidden="true" className="h-5 w-5 text-white" />
-          </span>
-          <div>
+          <Image
+            src="/logo-mark.png"
+            alt="HawaSathi logo"
+            width={44}
+            height={44}
+            priority
+            className="h-11 w-11 shrink-0"
+          />
+          <div className="min-w-0">
             <h1 className="text-xl font-bold leading-tight">HawaSathi</h1>
             <p className="text-sm text-muted-foreground">
               Know what the air is like, what your household can do today,
