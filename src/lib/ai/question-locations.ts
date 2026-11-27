@@ -23,6 +23,7 @@
 import { findCity } from "@/lib/data/cities";
 
 const GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search";
+const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 const TIMEOUT_MS = 6_000;
 const MAX_LOCATIONS = 2;
 const MAX_GEOCODE_ATTEMPTS = 2;
@@ -86,6 +87,16 @@ function toCoord(v: unknown): number | null {
   return typeof v === "number" && Number.isFinite(v) ? v : null;
 }
 
+/** Nominatim returns coordinates as strings; accept both safely. */
+function toCoordLoose(v: unknown): number | null {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string" && v.trim().length > 0) {
+    const n = Number(v);
+    if (Number.isFinite(n)) return n;
+  }
+  return null;
+}
+
 /** Candidate place tokens: letters only, 3-24 chars, not stopwords. */
 function candidateTokens(question: string): string[] {
   const raw = question.toLowerCase().replace(/[^a-z]+/g, " ").split(" ");
@@ -139,7 +150,12 @@ function alreadyFound(
 /**
  * Resolve up to MAX_LOCATIONS real places from the question text.
  * Order: curated city-list matches first, then (only if a plausible token
- * is still unresolved) the Open-Meteo geocoder, filtered to India.
+ * is still unresolved) two geocoder tiers filtered to India:
+ *   1. Open-Meteo geocoding (GeoNames) - fast, cities and larger towns;
+ *   2. Nominatim (OpenStreetMap) - neighbourhood/locality names such as
+ *      "Warje" that GeoNames does not carry. Only place-like result types
+ *      are accepted (suburb, neighbourhood, city, town, village, state...),
+ *      never POIs such as businesses or railway stations.
  */
 export async function resolveQuestionLocations(
   question: string,
@@ -180,7 +196,9 @@ export async function resolveQuestionLocations(
 
   for (const token of geoTokens) {
     if (found.length >= MAX_LOCATIONS) break;
-    const match = await geocodeInIndia(token, options);
+    const match =
+      (await geocodeInIndia(token, options)) ??
+      (await geocodeNeighbourhood(token, options));
     if (!match) continue;
     if (alreadyFound(match.lat, match.lon, found)) continue;
     found.push({
@@ -234,6 +252,81 @@ async function geocodeInIndia(
     return null;
   } catch {
     // Geocoder unavailable: degrade honestly, no place invented.
+    return null;
+  }
+}
+
+interface NominatimResult {
+  lat?: unknown;
+  lon?: unknown;
+  name?: unknown;
+  addresstype?: unknown;
+  type?: unknown;
+  display_name?: unknown;
+  address?: { state?: unknown };
+}
+
+/**
+ * Place-like result types accepted from Nominatim. Deliberately excludes
+ * POI categories (railway, business, amenity...) so a random shop called
+ * "Warje" can never become an air-quality reading location.
+ */
+const NOMINATIM_PLACE_TYPES = new Set([
+  "suburb",
+  "neighbourhood",
+  "quarter",
+  "borough",
+  "city",
+  "town",
+  "village",
+  "hamlet",
+  "township",
+  "municipality",
+  "county",
+  "district",
+  "state",
+  "union_territory",
+]);
+
+async function geocodeNeighbourhood(
+  token: string,
+  options: ResolveOptions
+): Promise<IndiaMatch | null> {
+  const url = `${NOMINATIM_URL}?q=${encodeURIComponent(token)}&format=jsonv2&addressdetails=1&limit=5&countrycodes=in`;
+  try {
+    const res = await (options.fetchImpl ?? fetch)(url, {
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "HawaSathi/1.0 (urban air quality assistant)",
+        "Accept-Language": "en",
+      },
+    });
+    if (!res.ok) return null;
+    const raw: unknown = await res.json();
+    if (!Array.isArray(raw)) return null;
+    for (const entry of raw as unknown[]) {
+      if (!isRecord(entry)) continue;
+      const geo = entry as NominatimResult;
+      const kind = typeof geo.addresstype === "string" ? geo.addresstype : geo.type;
+      if (typeof kind !== "string" || !NOMINATIM_PLACE_TYPES.has(kind)) continue;
+      const lat = toCoordLoose(geo.lat);
+      const lon = toCoordLoose(geo.lon);
+      if (lat === null || lon === null) continue;
+      const name = typeof geo.name === "string" && geo.name.length > 0 ? geo.name : token;
+      const state = typeof geo.address?.state === "string" ? geo.address.state : null;
+      const label = state && !name.toLowerCase().includes(state.toLowerCase())
+        ? `${name}, ${state}`
+        : name;
+      return {
+        label: label.slice(0, 100),
+        lat: Math.round(lat * 100) / 100,
+        lon: Math.round(lon * 100) / 100,
+      };
+    }
+    return null;
+  } catch {
+    // Nominatim unavailable or rate-limited: degrade honestly.
     return null;
   }
 }

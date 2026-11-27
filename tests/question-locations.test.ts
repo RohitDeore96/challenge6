@@ -88,6 +88,52 @@ describe("question location resolution", () => {
     ]);
   });
 
+  it("resolves neighbourhoods via Nominatim when GeoNames lacks them", async () => {
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("geocoding-api.open-meteo.com")) {
+        // GeoNames has no "Warje": valid response, empty result set.
+        return geocoderJson({ generationtime_ms: 0.1 });
+      }
+      return new Response(
+        JSON.stringify([
+          {
+            lat: "18.4820444",
+            lon: "73.8001705",
+            name: "Warje",
+            addresstype: "suburb",
+            category: "place",
+            display_name:
+              "Warje, Anandnagar, Pune City Subdistrict, Pune, Maharashtra, 411058, India",
+            address: { state: "Maharashtra" },
+          },
+        ]),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    });
+    const found = await resolveQuestionLocations(
+      "what is warje aqi in pune",
+      HOME,
+      { fetchImpl: fetchImpl as unknown as typeof fetch }
+    );
+    expect(found).toEqual([
+      {
+        label: "Pune, Maharashtra",
+        lat: 18.5204,
+        lon: 73.8567,
+        source: "city_list",
+        relation: "home",
+      },
+      {
+        label: "Warje, Maharashtra",
+        lat: 18.48,
+        lon: 73.8,
+        source: "geocoder",
+        relation: "other",
+      },
+    ]);
+  });
+
   it("ignores geocoder hits outside India and unmatched tokens", async () => {
     const fetchImpl = vi.fn(async () =>
       geocoderJson({
