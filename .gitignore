@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+next-env.d.ts
+
+# Environment variables and secrets (never commit)
+.env
+.env.local
+.env.development.local
+.env.production.local
+.env*.local
+
+# Logs
+dev.log
+server.log
+*.log
+
+# Sandbox / local tooling (not part of the application)
+.zscripts/
+Caddyfile
+dev-sandbox.sh
+skills/
+
+# Local working folders (not part of the application)
+upload/
+download/
+scripts/
+agent-ctx/
+
+# Test artifacts
+coverage/
+.vitest/
+
+# Build/typecheck artifacts
+*.tsbuildinfo
+
+# Sandbox leftovers (not part of the application)
+db/
+mini-services/
+
+# OS files
+.DS_Store
+Thumbs.db
