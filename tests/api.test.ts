@@ -163,6 +163,26 @@ describe("POST /api/assistant", () => {
     expect(body.plan).toBeDefined();
   });
 
+  it("skips AI-only question lookups when no Gemini key is configured", async () => {
+    // Geocoding a named place + fetching its live data is AI-only work:
+    // without a server-side key it can never contribute to a useful AI
+    // answer, so the route must skip it (single provider fetch for home).
+    const fetchMock = vi.fn(async () => jsonResponse(makeOpenMeteoResponse()));
+    vi.stubGlobal("fetch", fetchMock);
+    const res = await assistantPOST(
+      assistantRequest({
+        ...VALID_BODY,
+        question: "What is the AQI in Mumbai right now?",
+      })
+    );
+    const body = await res.json();
+    expect(body.ai.status).toBe("unavailable");
+    expect(body.ai.reason).toBe("key_not_configured");
+    expect(body.plan).toBeDefined();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(body.queriedLocations).toBeUndefined();
+  });
+
   it("honours 'not practical' feedback in the returned plan", async () => {
     vi.stubGlobal(
       "fetch",

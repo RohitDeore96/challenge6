@@ -46,6 +46,16 @@ function unavailable(
   };
 }
 
+/**
+ * True when a server-side Gemini credential is configured.
+ * Callers use this to skip AI-only work (question geocoding, extra
+ * provider fetches) that could never contribute to a useful AI answer.
+ * The key itself is never logged or returned.
+ */
+export function isGeminiConfigured(): boolean {
+  return Boolean((process.env.GEMINI_API_KEY ?? "").trim());
+}
+
 function isTransient(status: number): boolean {
   return status === 429 || (status >= 500 && status <= 599);
 }
