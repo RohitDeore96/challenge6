@@ -34,3 +34,32 @@ jobs:
         env:
           # Build must not need a Gemini key: the app degrades honestly.
           GEMINI_API_KEY: ""
+
+  # Secret scanning over the full Git history. Blocks the PR/push when a
+  # credential pattern (API keys, tokens, private keys) is detected.
+  secrets-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history: scan past commits too
+
+      - name: Gitleaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Advisory dependency audit: surfaces known vulnerabilities in the logs
+  # for review, but does not block merges on its own (findings must be
+  # reviewed and triaged, not blindly auto-upgraded - see SECURITY.md).
+  dependency-audit:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve a package-lock from package.json
+        run: npm install --package-lock-only --ignore-scripts --no-audit
+
+      - name: Dependency audit (production dependencies)
+        run: npm audit --omit=dev

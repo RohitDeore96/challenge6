@@ -44,3 +44,20 @@ mini-services/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Vercel local project metadata
+.vercel/
+
+# Private keys and credentials (never commit)
+*.pem
+*.key
+secrets/
+credentials/
+
+# Browser automation authentication state (can contain session cookies)
+playwright/.auth/
+storage-state*.json
+
+# Browser test outputs (can contain cookies, page data or personal info)
+playwright-report/
+test-results/
