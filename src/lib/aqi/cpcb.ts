@@ -194,9 +194,25 @@ export type IndicativeAqiResult =
 
 const AQI_MAX = 500;
 
-/** Minimum valid hours required inside each averaging window. */
-const MIN_24H = 18; // >= 75% of a 24-hour window
-const MIN_8H = 6; // >= 75% of an 8-hour window
+/**
+ * CPCB's overall-AQI methodology requires pollutant eligibility before an
+ * overall index is produced: at least three pollutants must have valid
+ * sub-indexes, and at least one of them must be PM2.5 or PM10. Below that
+ * bar no overall estimate is shown - the per-pollutant sub-indexes are
+ * still computed and reported, and raw concentrations are shown instead.
+ */
+export const MIN_POLLUTANTS_FOR_OVERALL = 3;
+
+/**
+ * Minimum valid hours required inside each averaging window.
+ * NOTE: the 75% coverage threshold is a PROJECT-LEVEL completeness rule
+ * (this app's own data-quality bar), not an official CPCB requirement.
+ * The official methodology defines fixed averaging periods per pollutant;
+ * how much partial data is acceptable for a model grid cell is this
+ * project's documented choice (see docs/DATA_METHODOLOGY.md).
+ */
+const MIN_24H = 18; // >= 75% of a 24-hour window (project rule)
+const MIN_8H = 6; // >= 75% of an 8-hour window (project rule)
 
 interface SpeciesDef {
   key: string;
@@ -221,13 +237,19 @@ const SPECIES: readonly SpeciesDef[] = [
 /**
  * Compute the model-derived indicative India AQI estimate.
  *
- * Rules implemented (brief section 7.2):
+ * Rules implemented (brief section 7.2 + CPCB overall-AQI eligibility):
  * 1. A sub-index is produced only when the required averaging window has
- *    enough valid data (>=75% of hours).
+ *    enough valid data (>=75% of hours; a project-level completeness rule,
+ *    not an official CPCB requirement).
  * 2. Missing pollutants are reported as excluded, never silently dropped.
- * 3. If no pollutant yields a sub-index, the result is "unavailable" and
- *    callers must show raw concentrations instead of an index value.
- * 4. The overall value is the worst (maximum) available sub-index,
+ * 3. Per-pollutant sub-indexes are always computed for valid data, even
+ *    when the overall estimate is withheld.
+ * 4. The overall estimate is produced only when CPCB-style pollutant
+ *    eligibility holds: at least MIN_POLLUTANTS_FOR_OVERALL pollutants AND
+ *    at least one of PM2.5 / PM10. Otherwise the result is "unavailable"
+ *    with the unmet condition named, and callers must show raw
+ *    concentrations instead of an index value.
+ * 5. When available, the overall value is the worst (maximum) sub-index,
  *    mirroring CPCB's "worst pollutant defines the AQI" rule.
  */
 export function computeIndicativeIndiaAqi(
@@ -263,6 +285,8 @@ export function computeIndicativeIndiaAqi(
   }
 
   const values = Object.values(subIndices);
+  const hasPm25OrPm10 = "PM2.5" in subIndices || "PM10" in subIndices;
+
   if (values.length === 0) {
     return {
       status: "unavailable",
@@ -271,6 +295,30 @@ export function computeIndicativeIndiaAqi(
       pollutantsExcluded: excluded,
       reason:
         "Insufficient valid model data to compute any pollutant sub-index. Raw concentrations are shown instead of an index value.",
+    };
+  }
+
+  if (included.length < MIN_POLLUTANTS_FOR_OVERALL) {
+    return {
+      status: "unavailable",
+      subIndices,
+      pollutantsIncluded: included,
+      pollutantsExcluded: excluded,
+      reason:
+        `An overall estimate needs at least ${MIN_POLLUTANTS_FOR_OVERALL} pollutants with valid sub-indexes; only ${included.length} ${included.length === 1 ? "is" : "are"} available (${included.join(", ")}). ` +
+        "Per-pollutant sub-indexes are still shown and raw concentrations are displayed instead of an index value.",
+    };
+  }
+
+  if (!hasPm25OrPm10) {
+    return {
+      status: "unavailable",
+      subIndices,
+      pollutantsIncluded: included,
+      pollutantsExcluded: excluded,
+      reason:
+        "An overall estimate needs at least one of PM2.5 or PM10 among the available pollutants, and neither is available right now. " +
+        "Per-pollutant sub-indexes are still shown and raw concentrations are displayed instead of an index value.",
     };
   }
 
