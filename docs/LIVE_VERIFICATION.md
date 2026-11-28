@@ -143,17 +143,41 @@ messages and zero page errors. To confirm on your machine: open the site in an
 incognito window with extensions disabled, or in a fresh profile — the console
 stays clean.
 
+## Re-verification (2026-11-28)
+
+A fresh server-side check of the **deployed Production environment** was run
+on **2026-11-28 (UTC)**:
+
+```
+# POST https://challenge6-phi.vercel.app/api/assistant
+#   scripted Delhi commuter household + question
+#   "Why is walking excluded for my commute today?"
+# observed response (safe fields only):
+#   ai.status = "ok"
+#   ai.model  = "gemini-3.5-flash-lite"
+#   air.ok    = true ; deterministic plan present
+```
+
+Result: the Production environment **has `GEMINI_API_KEY` configured** (stored
+as a secret in Vercel; the value is never committed, logged or exposed
+client-side). This re-verification confirms the statement in
+[docs/DEMO.md](DEMO.md) — "the live app currently has a key" — and supersedes
+the older wording below that described a temporary verification-session key
+as deleted.
+
 ## Honesty notes
 
 - The deployed site had `GEMINI_API_KEY` configured at the time of capture,
   so the real-model answers come from it; the no-key state was therefore
   captured from a local production build of the same commit, which is the
-  identical code path (`reason: "key_not_configured"`).
+  identical code path (`reason: "key_not_configured"`). The 2026-11-28
+  re-verification above confirms the key is still configured on Production
+  and the live AI answers remain reproducible.
 - All captures are point-in-time: the provider returns new values every run,
   so re-running the commands today will give different (similar-magnitude)
   numbers. The committed files are the proof of what the deployed service
   returned on 2026-11-27.
-- The maintainer's test API key used to enable the AI on the deployed site
-  during this verification window was a free-tier key and is deleted after
-  the session; anyone can reproduce the AI evidence with their own free
-  Google AI Studio key ([setup](../README.md#setup)).
+- Anyone can reproduce the AI evidence with their own free Google AI Studio
+  key ([setup](../README.md#setup)); the deployed key itself is never
+  published, and the no-key fallback ([08](evidence/08-honest-fallback-no-key.json))
+  documents the same code path without any credential.

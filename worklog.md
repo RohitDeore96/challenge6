@@ -229,3 +229,44 @@ series with CPCB breakpoints and ≥75% window coverage; the UI card, the
 | Stale-marker scan (`TODO`, `FIXME`, old model IDs, old test counts) | no live references; the `93 tests` figures appear only as dated historical run records in worklog/DEVELOPMENT_LOG |
 | Evidence set | 12 captures + 7 screenshots present, timestamps consistent with the v2-pipeline refresh; EVIDENCE_INDEX reading order matches the files on disk |
 
+
+## 2026-11-28 — Session 6: recommendation-driven correctness, compliance and security pass
+
+### A. Why
+
+An external review (recommendations document) confirmed the architecture is
+worth keeping and prioritised two algorithmic correctness fixes (P0),
+external-service compliance and Gemini efficiency work (P1), plus security
+hygiene (P2). This session applied the essential items without changing the
+architecture or the UI structure.
+
+### B. P0 — algorithmic correctness
+
+| Change | Detail |
+| --- | --- |
+| `src/lib/aqi/cpcb.ts` | The overall indicative India AQI estimate is now produced only when CPCB-style pollutant eligibility holds: at least 3 pollutants with valid sub-indexes AND at least one of PM2.5/PM10 (`MIN_POLLUTANTS_FOR_OVERALL`). Below the bar the result is `unavailable` with the unmet condition named; per-pollutant sub-indexes are still computed and raw concentrations are shown. The >=75% averaging-window coverage rule is documented as a project-level completeness rule, not an official CPCB requirement. Tests added: 1-pollutant, 2-pollutant, 3-pollutant-without-PM, boundary and reason-wording cases. |
+| `src/lib/planner/window.ts` | Candidate "potentially better" windows must now be truly contiguous: every successive timestamp must be exactly one hour apart (the provider's hourly cadence). A missing, duplicated, malformed or out-of-order hour breaks the run instead of being silently bridged by the earlier array filtering. Regression tests: the missing-hour example, duplicate timestamps, an out-of-order series, plus a positive case proving genuine runs are still found with boundaries strictly inside the run. |
+
+### C. P1 — provider compliance and Gemini efficiency
+
+| Change | Detail |
+| --- | --- |
+| `src/lib/ai/question-locations.ts` | Successful geocodes are cached per place name (24 h, size-capped); Nominatim requests are serialised with >=1.1 s spacing to stay inside the public usage policy; per-attempt deadline support added. Documented honestly as per-serverless-instance, best-effort (not a global limiter). |
+| `src/app/api/assistant/route.ts` | One overall route deadline (25 s) now bounds geocoding + extra provider fetches + one Gemini call inside `maxDuration: 30`; remaining AI-only lookups are skipped when the budget is exhausted instead of stacking bounded fetch timeouts. |
+| `src/lib/ai/gemini.ts` + route | AI-only question lookups (geocoding, extra provider fetches) are skipped when no server-side `GEMINI_API_KEY` is configured; the deterministic plan and the honest `key_not_configured` state are unchanged. New test proves a keyless Mumbai question now makes exactly one provider call and returns no queried-location chips. |
+| UI attribution | The air summary card links "Air-quality data by Open-Meteo (CAMS model)"; the footer links Open-Meteo, CAMS/Copernicus-ECMWF and OpenStreetMap (Nominatim); the AI panel shows place-search attribution next to the locality chips. THIRD_PARTY_NOTICES.md gained rows for Open-Meteo Geocoding (GeoNames) and OpenStreetMap Nominatim. |
+
+### D. P2 — AI contract and security hygiene
+
+| Change | Detail |
+| --- | --- |
+| AI output contract | `AI_OUTPUT_LIMITS` in `schemas.ts` is now the single source of truth (explanation <=1000 chars, <=3 action notes, notes <=200 chars); prompt text, validator and response schema all derive from it. Conservative limits chosen because Gemini is called with `maxOutputTokens: 1024` — the old 1200/6x300 contract could truncate the JSON into avoidable rejections. Alignment tests assert the prompt wording, the validator boundaries and the schema agree. |
+| `.gitignore` | Added `.vercel/`, private-key patterns (`*.pem`, `*.key`, `secrets/`, `credentials/`), browser-automation auth state and browser-test output artefacts. |
+| CI | New `secrets-scan` job (gitleaks over full history) and an advisory `dependency-audit` job (npm audit; findings surfaced for review, non-blocking by design). |
+| Docs | LIVE_VERIFICATION.md gained a 2026-11-28 re-verification section: the Production environment has `GEMINI_API_KEY` configured — a fresh deployed-site POST returned `ai.status: "ok"`, `ai.model: "gemini-3.5-flash-lite"`. This supersedes the stale "temporary key deleted" wording and matches docs/DEMO.md. |
+
+### E. Gates
+
+`lint` clean · `typecheck` clean · **119 tests passed across 8 files** (was
+102; +17 new) · production build clean. Playwright E2E in CI remains a
+tracked follow-up (see README limitations).
