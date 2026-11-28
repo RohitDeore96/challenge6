@@ -302,10 +302,28 @@ export function HawaSathiApp() {
           <div className="space-y-2">
             <p className="text-sm font-semibold text-foreground">Data &amp; AI honesty</p>
             <p>
-              <strong>Data:</strong> Open-Meteo Air Quality API (CAMS model
-              forecast) - modelled area-level data, not official CPCB station
-              readings. Indicative India AQI values are model-derived estimates
-              using CPCB category logic and are never mixed with the US AQI.
+              <strong>Data:</strong>{" "}
+              <a
+                href="https://open-meteo.com/en/docs/air-quality-api"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-dotted underline-offset-2 hover:text-foreground"
+              >
+                Air-quality data by Open-Meteo
+              </a>{" "}
+              (model data &copy; CAMS / Copernicus-ECMWF; place search &copy;{" "}
+              <a
+                href="https://www.openstreetmap.org/copyright"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-dotted underline-offset-2 hover:text-foreground"
+              >
+                OpenStreetMap
+              </a>{" "}
+              contributors via Nominatim) - modelled area-level data, not
+              official CPCB station readings. Indicative India AQI values are
+              model-derived estimates using CPCB category logic and are never
+              mixed with the US AQI.
             </p>
             <p>
               <strong>AI:</strong> a Gemini model (AI_MODEL setting, default

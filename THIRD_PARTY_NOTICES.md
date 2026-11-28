@@ -28,8 +28,10 @@ docs/DEVELOPMENT_LOG.md).
 
 | Source | URL | Terms | Used for |
 |---|---|---|---|
-| Open-Meteo Air Quality API | https://open-meteo.com/en/docs/air-quality-api | CC BY 4.0 (non-commercial use); data from CAMS (ECMWF/Copernicus) | Hourly pollutant model data, US AQI. Attribution shown in UI footer and air cards |
+| Open-Meteo Air Quality API | https://open-meteo.com/en/docs/air-quality-api | CC BY 4.0 (non-commercial use); data from CAMS (ECMWF/Copernicus) | Hourly pollutant model data, US AQI. Attribution linked in the air summary card and the UI footer |
 | CAMS — Copernicus Atmosphere Monitoring Service | https://atmosphere.copernicus.eu | Copernicus open licence | Underlying forecast model (via Open-Meteo) |
+| Open-Meteo Geocoding API (GeoNames) | https://open-meteo.com/en/docs/geocoding-api | CC BY 4.0 (non-commercial use); GeoNames data | Question-time place resolution for city/town names, filtered to India |
+| OpenStreetMap Nominatim | https://nominatim.openstreetmap.org | ODbL 1.0; © OpenStreetMap contributors | Question-time neighbourhood/locality resolution fallback (place-type filtered, serialised to the public rate limit, successful results cached; attribution linked in the AI panel and the UI footer) |
 
 ## Reference documents (no content copied; used as methodology sources)
 

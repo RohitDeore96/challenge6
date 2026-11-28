@@ -59,6 +59,18 @@ function LiveLocationChips({ queried }: { queried: QueriedLocation[] }) {
           No live data for {q.label} right now
         </span>
       ))}
+      <span className="w-full text-[10px] text-muted-foreground">
+        Place search &copy;{" "}
+        <a
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline decoration-dotted underline-offset-2 hover:text-foreground"
+        >
+          OpenStreetMap
+        </a>{" "}
+        contributors (Nominatim) and Open-Meteo geocoding
+      </span>
     </div>
   );
 }

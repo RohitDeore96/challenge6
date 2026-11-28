@@ -157,7 +157,15 @@ export function AirQualitySummary({ air, loading, onRefresh }: Props) {
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">
           <Satellite aria-hidden="true" className="h-3.5 w-3.5" />
-          {air.source.provider} · {air.source.dataType}
+          <a
+            href={air.source.docsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline decoration-dotted underline-offset-2 hover:text-foreground"
+          >
+            Air-quality data by Open-Meteo (CAMS model)
+          </a>
+          · {air.source.dataType}
         </span>
         <span
           className={`inline-flex items-center gap-1 font-medium ${
