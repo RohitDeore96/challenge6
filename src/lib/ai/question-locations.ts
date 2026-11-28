@@ -13,6 +13,13 @@
  * - Fallback: Open-Meteo Geocoding API (GeoNames data) for names that are
  *   not in the list, filtered to India. The geocoder is only consulted for
  *   plausible place tokens (length, stopword filtering, attempt cap).
+ * - Nominatim (OpenStreetMap) is used only as the second fallback tier for
+ *   neighbourhood/locality names, and is kept inside its public usage
+ *   policy: successful geocodes are cached per place name (24 h), and
+ *   Nominatim requests are serialised with a >=1.1 s spacing. Like every
+ *   module-level guard this is per serverless instance and best-effort,
+ *   not a global rate limiter; the attempt cap (2 tokens/question) keeps
+ *   the worst case well inside the published limits.
  * - Nothing is ever guessed: if a place cannot be resolved confidently it
  *   is simply not returned, and the AI is told which places have live data.
  * - Places within ~0.3 degrees of the selected location are marked "home";
@@ -69,6 +76,107 @@ export interface QuestionLocation {
 
 export interface ResolveOptions {
   fetchImpl?: typeof fetch;
+  /**
+   * Route-level deadline (epoch ms). Before each geocoder attempt the
+   * resolver stops if the deadline has passed, so question resolution can
+   * never push a serverless request past its overall time budget.
+   */
+  deadline?: number;
+}
+
+/* ------------------------------------------------------------------ */
+/* Shared geocoder state: success cache + Nominatim throttle            */
+/* ------------------------------------------------------------------ */
+
+const NOMINATIM_MIN_INTERVAL_MS = 1_100; // public policy: max 1 request/second
+const GEOCACHE_TTL_MS = 24 * 60 * 60_000; // successful geocodes cached 24 h
+const GEOCACHE_MAX_ENTRIES = 200;
+
+interface GeocoderState {
+  /** Successful geocode results by "tier:token"; never stores questions. */
+  successes: Map<string, { match: IndiaMatch; expiresAt: number }>;
+  /** Serialised Nominatim requests (keeps spacing without retry storms). */
+  queue: Promise<unknown>;
+  lastNominatimAt: number;
+}
+
+/**
+ * Per-fetcher geocoder state. In production every call shares the same
+ * fetcher (the platform global fetch), so this is one shared cache and one
+ * shared throttle per serverless instance. Tests that inject their own
+ * fetchImpl automatically get isolated state.
+ */
+const geocoderStates = new Map<typeof fetch | null, GeocoderState>();
+
+function stateFor(fetcher: typeof fetch | null): GeocoderState {
+  let state = geocoderStates.get(fetcher);
+  if (!state) {
+    state = {
+      successes: new Map(),
+      queue: Promise.resolve(),
+      lastNominatimAt: 0,
+    };
+    geocoderStates.set(fetcher, state);
+  }
+  return state;
+}
+
+function cacheGetMatch(state: GeocoderState, key: string): IndiaMatch | null {
+  const hit = state.successes.get(key);
+  if (!hit) return null;
+  if (Date.now() > hit.expiresAt) {
+    state.successes.delete(key);
+    return null;
+  }
+  return hit.match;
+}
+
+function cacheSetMatch(
+  state: GeocoderState,
+  key: string,
+  match: IndiaMatch
+): void {
+  // Simple size guard so a long-lived instance cannot grow unbounded.
+  if (state.successes.size >= GEOCACHE_MAX_ENTRIES) {
+    const oldest = state.successes.keys().next().value;
+    if (oldest !== undefined) state.successes.delete(oldest);
+  }
+  state.successes.set(key, {
+    match,
+    expiresAt: Date.now() + GEOCACHE_TTL_MS,
+  });
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Nominatim fetch through a serialised queue with >=1.1 s spacing between
+ * requests, per the public usage policy (max 1 request/second). No retries
+ * here: a failed or rate-limited call simply yields no result.
+ */
+function nominatimFetch(
+  fetcher: typeof fetch,
+  state: GeocoderState,
+  url: string,
+  init: RequestInit
+): Promise<Response> {
+  const run = async (): Promise<Response> => {
+    const wait = state.lastNominatimAt + NOMINATIM_MIN_INTERVAL_MS - Date.now();
+    if (wait > 0) await sleep(wait);
+    try {
+      return await fetcher(url, init);
+    } finally {
+      state.lastNominatimAt = Date.now();
+    }
+  };
+  const result = state.queue.then(run, run);
+  state.queue = result.then(
+    () => undefined,
+    () => undefined
+  );
+  return result;
 }
 
 interface GeocodeResult {
@@ -168,6 +276,9 @@ export async function resolveQuestionLocations(
     return found;
   }
 
+  const state = stateFor(options.fetchImpl ?? null);
+  const deadlinePassed = () =>
+    options.deadline !== undefined && Date.now() >= options.deadline;
   const resolvedTokenNames = new Set<string>();
 
   // 1. Curated list: exact name matches over tokens and bigrams.
@@ -196,9 +307,10 @@ export async function resolveQuestionLocations(
 
   for (const token of geoTokens) {
     if (found.length >= MAX_LOCATIONS) break;
+    if (deadlinePassed()) break;
     const match =
-      (await geocodeInIndia(token, options)) ??
-      (await geocodeNeighbourhood(token, options));
+      (await geocodeInIndia(token, options, state)) ??
+      (await geocodeNeighbourhood(token, options, state));
     if (!match) continue;
     if (alreadyFound(match.lat, match.lon, found)) continue;
     found.push({
@@ -221,8 +333,13 @@ interface IndiaMatch {
 
 async function geocodeInIndia(
   token: string,
-  options: ResolveOptions
+  options: ResolveOptions,
+  state: GeocoderState
 ): Promise<IndiaMatch | null> {
+  const cacheKey = `openmeteo:${token}`;
+  const cached = cacheGetMatch(state, cacheKey);
+  if (cached) return cached;
+
   const url = `${GEOCODE_URL}?name=${encodeURIComponent(token)}&count=5&language=en&format=json`;
   try {
     const res = await (options.fetchImpl ?? fetch)(url, {
@@ -241,13 +358,15 @@ async function geocodeInIndia(
       if (lat === null || lon === null) continue;
       const name = typeof geo.name === "string" ? geo.name : token;
       const admin1 = typeof geo.admin1 === "string" ? geo.admin1 : null;
-      return {
+      const match: IndiaMatch = {
         label: admin1 && !name.toLowerCase().includes(admin1.toLowerCase())
           ? `${name}, ${admin1}`
           : name,
         lat: Math.round(lat * 1000) / 1000,
         lon: Math.round(lon * 1000) / 1000,
       };
+      cacheSetMatch(state, cacheKey, match);
+      return match;
     }
     return null;
   } catch {
@@ -290,11 +409,16 @@ const NOMINATIM_PLACE_TYPES = new Set([
 
 async function geocodeNeighbourhood(
   token: string,
-  options: ResolveOptions
+  options: ResolveOptions,
+  state: GeocoderState
 ): Promise<IndiaMatch | null> {
+  const cacheKey = `nominatim:${token}`;
+  const cached = cacheGetMatch(state, cacheKey);
+  if (cached) return cached;
+
   const url = `${NOMINATIM_URL}?q=${encodeURIComponent(token)}&format=jsonv2&addressdetails=1&limit=5&countrycodes=in`;
   try {
-    const res = await (options.fetchImpl ?? fetch)(url, {
+    const res = await nominatimFetch(options.fetchImpl ?? fetch, state, url, {
       signal: AbortSignal.timeout(TIMEOUT_MS),
       headers: {
         Accept: "application/json",
@@ -314,15 +438,17 @@ async function geocodeNeighbourhood(
       const lon = toCoordLoose(geo.lon);
       if (lat === null || lon === null) continue;
       const name = typeof geo.name === "string" && geo.name.length > 0 ? geo.name : token;
-      const state = typeof geo.address?.state === "string" ? geo.address.state : null;
-      const label = state && !name.toLowerCase().includes(state.toLowerCase())
-        ? `${name}, ${state}`
+      const stateName = typeof geo.address?.state === "string" ? geo.address.state : null;
+      const label = stateName && !name.toLowerCase().includes(stateName.toLowerCase())
+        ? `${name}, ${stateName}`
         : name;
-      return {
+      const match: IndiaMatch = {
         label: label.slice(0, 100),
         lat: Math.round(lat * 1000) / 1000,
         lon: Math.round(lon * 1000) / 1000,
       };
+      cacheSetMatch(state, cacheKey, match);
+      return match;
     }
     return null;
   } catch {
