@@ -39,6 +39,27 @@ function validPm25(v: number | null | undefined): v is number {
   return typeof v === "number" && Number.isFinite(v) && v >= 0;
 }
 
+/**
+ * The provider series is hourly, so two forecast hours are only part of the
+ * same continuous window when their timestamps are EXACTLY one hour apart.
+ * A missing, duplicated, malformed or out-of-order hour must break the
+ * window: filtering invalid records must never make two non-adjacent
+ * forecast hours look contiguous just because they sit next to each other
+ * in the filtered array.
+ *
+ * Open-Meteo returns hourly timestamps on a fixed UTC cadence, so the
+ * constant 1-hour delta is the provider's documented cadence (a DST-affected
+ * local-time series would also break here, which is the honest outcome for
+ * this app since series are compared in a single UTC time basis).
+ */
+function isConsecutiveHour(prev: HourlyPoint, next: HourlyPoint): boolean {
+  const a = Date.parse(prev.time);
+  const b = Date.parse(next.time);
+  return (
+    Number.isFinite(a) && Number.isFinite(b) && b - a === 3_600_000
+  );
+}
+
 function mean(values: number[]): number {
   if (values.length === 0) return Number.NaN;
   return values.reduce((a, b) => a + b, 0) / values.length;
@@ -47,6 +68,12 @@ function mean(values: number[]): number {
 /**
  * Find a potentially better low-PM2.5 window in the next hours.
  * `nowIso` should be an ISO timestamp in the same time basis as the series.
+ *
+ * Candidate windows must be TRULY CONTIGUOUS: every successive timestamp
+ * inside a window must be exactly one hour apart (the provider's hourly
+ * cadence). A missing or malformed hour breaks the window and is never
+ * bridged, so two non-adjacent forecast hours can never be presented as a
+ * continuous planning window.
  */
 export function findBetterWindow(
   hourly: readonly HourlyPoint[],
@@ -84,17 +111,34 @@ export function findBetterWindow(
   }
 
   let best: { start: string; end: string; meanValue: number } | null = null;
-  for (let i = 0; i + options.windowHours <= future.length; i++) {
-    const slice = future.slice(i, i + options.windowHours);
-    const values = slice.map((p) => p.pm25 as number);
-    const m = mean(values);
-    if (!Number.isFinite(m)) continue;
-    if (!best || m < best.meanValue) {
-      best = {
-        start: slice[0].time,
-        end: slice[slice.length - 1].time,
-        meanValue: m,
-      };
+
+  // Split the valid future points into maximal runs of exactly-one-hour-
+  // apart timestamps. Candidate windows are only scanned INSIDE a run, so
+  // a missing/duplicate/out-of-order hour can never silently join two
+  // non-adjacent forecast hours into one "continuous" window.
+  const runs: HourlyPoint[][] = [];
+  for (const point of future) {
+    const run = runs[runs.length - 1];
+    if (run && isConsecutiveHour(run[run.length - 1], point)) {
+      run.push(point);
+    } else {
+      runs.push([point]);
+    }
+  }
+
+  for (const run of runs) {
+    for (let i = 0; i + options.windowHours <= run.length; i++) {
+      const slice = run.slice(i, i + options.windowHours);
+      const values = slice.map((p) => p.pm25 as number);
+      const m = mean(values);
+      if (!Number.isFinite(m)) continue;
+      if (!best || m < best.meanValue) {
+        best = {
+          start: slice[0].time,
+          end: slice[slice.length - 1].time,
+          meanValue: m,
+        };
+      }
     }
   }
 

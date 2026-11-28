@@ -102,3 +102,81 @@ describe("findBetterWindow", () => {
     expect(result.found).toBe(false);
   });
 });
+
+describe("window timestamp continuity", () => {
+  const NOW = "2026-11-27T12:00";
+
+  function points(...entries: [string, number | null][]): HourlyPoint[] {
+    return entries.map(([time, pm25]) => ({ time, pm25, pm10: null }));
+  }
+
+  it("does not treat non-adjacent forecast hours as a continuous window when an hour is missing", () => {
+    // 15:00 is missing (invalid record filtered out): the two valid hours
+    // around it must NOT be joined into a "continuous" 2-hour window.
+    const result = findBetterWindow(
+      points(
+        ["2026-11-27T13:00", 60],
+        ["2026-11-27T14:00", 60],
+        ["2026-11-27T15:00", null],
+        ["2026-11-27T16:00", 20]
+      ),
+      NOW
+    );
+    expect(result.found).toBe(false);
+    // The only contiguous run scanned is 13:00-14:00 (mean 60), so the
+    // honest answer is "differences are too small", not a bridged window.
+    expect(result.note).toMatch(/too small/i);
+    expect(result.startIso).toBeUndefined();
+    expect(result.endIso).toBeUndefined();
+  });
+
+  it("does not bridge duplicate timestamps into a window", () => {
+    // Duplicate 13:00 records plus a 2-hour jump to 15:00: no pair of
+    // successive timestamps is exactly one hour apart, so no window exists.
+    const result = findBetterWindow(
+      points(
+        ["2026-11-27T13:00", 60],
+        ["2026-11-27T13:00", 20],
+        ["2026-11-27T15:00", 20]
+      ),
+      NOW
+    );
+    expect(result.found).toBe(false);
+    expect(result.note).toMatch(/No clearly better window found/i);
+  });
+
+  it("does not bridge out-of-order timestamps into a window", () => {
+    // 14:00 followed by 13:00 followed by 15:00: the backward jump and the
+    // 2-hour jump both break contiguity, so no candidate window exists.
+    const result = findBetterWindow(
+      points(
+        ["2026-11-27T14:00", 58],
+        ["2026-11-27T13:00", 60],
+        ["2026-11-27T15:00", 18]
+      ),
+      NOW
+    );
+    expect(result.found).toBe(false);
+    expect(result.note).toMatch(/No clearly better window found/i);
+  });
+
+  it("still finds a genuinely contiguous window even when a gap exists elsewhere", () => {
+    // 15:00 is missing, but 16:00-17:00 is a real consecutive run: the
+    // window must be found with boundaries strictly inside that run.
+    const result = findBetterWindow(
+      points(
+        ["2026-11-27T13:00", 60],
+        ["2026-11-27T14:00", 60],
+        ["2026-11-27T15:00", null],
+        ["2026-11-27T16:00", 20],
+        ["2026-11-27T17:00", 20]
+      ),
+      NOW
+    );
+    expect(result.found).toBe(true);
+    expect(result.startIso).toBe("2026-11-27T16:00");
+    expect(result.endIso).toBe("2026-11-27T17:00");
+    expect(result.windowMeanPm25).toBe(20);
+    expect(result.comparisonMeanPm25).toBe(60);
+  });
+});
