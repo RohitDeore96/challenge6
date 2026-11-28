@@ -11,11 +11,18 @@
 
 import { z } from "zod";
 import { resolveGeminiModel } from "./prompt";
+import { AI_OUTPUT_LIMITS } from "@/lib/schemas";
 import type { AiExplanation, AiUnavailable } from "@/lib/schemas";
 
-const MAX_EXPLANATION = 1200;
-const MAX_NOTE = 300;
-const MAX_NOTES = 6;
+/**
+ * Validation limits come from the shared AI_OUTPUT_LIMITS contract in
+ * schemas.ts - the same numbers the prompt asks the model for. Changing a
+ * limit means changing it in ONE place (the contract), keeping the prompt,
+ * this validator and the response schema aligned by construction.
+ */
+const MAX_EXPLANATION = AI_OUTPUT_LIMITS.maxExplanationChars;
+const MAX_NOTE = AI_OUTPUT_LIMITS.maxNoteChars;
+const MAX_NOTES = AI_OUTPUT_LIMITS.maxActionNotes;
 
 const PROHIBITED_PATTERNS: RegExp[] = [
   /https?:\/\//i, // URLs

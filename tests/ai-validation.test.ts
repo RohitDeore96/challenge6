@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SYSTEM_INSTRUCTION, buildUserContent } from "@/lib/ai/prompt";
 import { sanitizeQuestion, validateAiOutput } from "@/lib/ai/validate";
+import { AI_OUTPUT_LIMITS, aiExplanationSchema } from "@/lib/schemas";
 import { makeAir, makeProfile, TEST_LOCATION } from "./helpers";
 import { generatePlan } from "@/lib/planner/rules";
 import { categoryByKey, categoryForIndex } from "@/lib/aqi/categories";
@@ -94,6 +95,78 @@ describe("AI output validation", () => {
     expect(
       validateAiOutput(JSON.stringify({ explanation: "" }), APPROVED).ok
     ).toBe(false);
+  });
+});
+
+describe("prompt/validator limit alignment", () => {
+  const limits = AI_OUTPUT_LIMITS;
+
+  it("the system instruction asks for exactly the limits the validator enforces", () => {
+    expect(SYSTEM_INSTRUCTION).toContain(
+      `<=${limits.maxExplanationChars} chars`
+    );
+    expect(SYSTEM_INSTRUCTION).toContain(`<=${limits.maxNoteChars} chars`);
+    expect(SYSTEM_INSTRUCTION).toContain(
+      `at most ${limits.maxActionNotes} items`
+    );
+  });
+
+  it("accepts output at the exact contract limits", () => {
+    const raw = JSON.stringify({
+      explanation: "x".repeat(limits.maxExplanationChars),
+      actionNotes: [
+        { actionId: APPROVED[0], note: "n".repeat(limits.maxNoteChars) },
+        { actionId: APPROVED[1], note: "second note" },
+        { actionId: APPROVED[2], note: "third note" },
+      ],
+    });
+    expect(validateAiOutput(raw, APPROVED).ok).toBe(true);
+  });
+
+  it("rejects output one character over the contract limits", () => {
+    const overExplanation = JSON.stringify({
+      explanation: "x".repeat(limits.maxExplanationChars + 1),
+      actionNotes: [],
+    });
+    expect(validateAiOutput(overExplanation, APPROVED).ok).toBe(false);
+
+    const overNote = JSON.stringify({
+      explanation: "fine",
+      actionNotes: [
+        { actionId: APPROVED[0], note: "n".repeat(limits.maxNoteChars + 1) },
+      ],
+    });
+    expect(validateAiOutput(overNote, APPROVED).ok).toBe(false);
+  });
+
+  it("rejects one more action note than the contract allows", () => {
+    const raw = JSON.stringify({
+      explanation: "fine",
+      actionNotes: APPROVED.map((id) => ({ actionId: id, note: "n" })).concat([
+        { actionId: APPROVED[0], note: "fourth" },
+      ]),
+    });
+    expect(validateAiOutput(raw, APPROVED).ok).toBe(false);
+  });
+
+  it("the response schema enforces the same limits", () => {
+    const atLimit = aiExplanationSchema.safeParse({
+      status: "ok",
+      model: "gemini-3.5-flash-lite",
+      explanation: "x".repeat(limits.maxExplanationChars),
+      actionNotes: [],
+      disclaimer: "disclaimer",
+    });
+    expect(atLimit.success).toBe(true);
+
+    const overLimit = aiExplanationSchema.safeParse({
+      status: "ok",
+      model: "gemini-3.5-flash-lite",
+      explanation: "x".repeat(limits.maxExplanationChars + 1),
+      actionNotes: [],
+      disclaimer: "disclaimer",
+    });
+    expect(overLimit.success).toBe(false);
   });
 });
 

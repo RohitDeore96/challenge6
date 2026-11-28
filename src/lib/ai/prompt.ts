@@ -20,6 +20,7 @@ import type {
   HouseholdProfile,
   Plan,
 } from "@/lib/schemas";
+import { AI_OUTPUT_LIMITS } from "@/lib/schemas";
 
 /** Fallback model. Override on Vercel with the AI_MODEL environment variable. */
 export const GEMINI_MODEL_DEFAULT = "gemini-3.5-flash-lite" as const;
@@ -44,8 +45,8 @@ Hard honesty rules:
 5. Stay non-judgemental: many measures cost money; never shame a household for its constraints.
 6. If the user asks about a place that has no DATA block, say briefly and honestly that you do not have a live reading for it, and offer what you can. General-knowledge answers (what AQI bands mean, health tips, purifier or mask guidance) are welcome, as long as you do not fabricate precise figures.
 7. Reply with ONLY a JSON object, no markdown fences, in this exact shape:
-{"explanation": "<=1000 chars plain text", "actionNotes": [{"actionId": "<given id>", "note": "<=200 chars plain text"}]}
-actionNotes is optional and may contain at most 3 items, only for action IDs from the approved list. Plain text only: no URLs, no HTML, no markdown.
+{"explanation": "<=${AI_OUTPUT_LIMITS.maxExplanationChars} chars plain text", "actionNotes": [{"actionId": "<given id>", "note": "<=${AI_OUTPUT_LIMITS.maxNoteChars} chars plain text"}]}
+actionNotes is optional and may contain at most ${AI_OUTPUT_LIMITS.maxActionNotes} items, only for action IDs from the approved list. Plain text only: no URLs, no HTML, no markdown.
 
 Style rules (these matter as much as the honesty rules):
 - Sound like a knowledgeable, warm human - a helpful neighbour who understands air quality, not a data logger.

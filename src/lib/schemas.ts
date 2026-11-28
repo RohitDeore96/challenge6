@@ -318,19 +318,37 @@ export const queriedLocationSchema = z.object({
 });
 export type QueriedLocation = z.infer<typeof queriedLocationSchema>;
 
+/* ------------------------------------------------------------------ */
+/* AI output contract (single source of truth)                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * One AI-output contract shared by the prompt, the validator and this
+ * schema, so the model is never asked for something the validator would
+ * reject (and vice versa). The numbers are deliberately conservative:
+ * Gemini is called with maxOutputTokens 1024, and a 1200-char explanation
+ * plus 6 x 300-char notes could exceed that budget and truncate the JSON
+ * into an avoidable validation rejection.
+ */
+export const AI_OUTPUT_LIMITS = {
+  maxExplanationChars: 1000,
+  maxActionNotes: 3,
+  maxNoteChars: 200,
+} as const;
+
 export const aiExplanationSchema = z.object({
   status: z.enum(["ok"]),
   /** Exact model id reported by the server (AI_MODEL, default gemini-3.5-flash-lite). */
   model: z.string().min(1).max(80),
-  explanation: z.string().min(1).max(1200),
+  explanation: z.string().min(1).max(AI_OUTPUT_LIMITS.maxExplanationChars),
   actionNotes: z
     .array(
       z.object({
         actionId: z.string().max(60),
-        note: z.string().min(1).max(300),
+        note: z.string().min(1).max(AI_OUTPUT_LIMITS.maxNoteChars),
       })
     )
-    .max(6),
+    .max(AI_OUTPUT_LIMITS.maxActionNotes),
   disclaimer: z.string(),
 });
 export type AiExplanation = z.infer<typeof aiExplanationSchema>;
